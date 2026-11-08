@@ -5,13 +5,13 @@ from sqlalchemy import select
 from app.workers.celery_app import celery_app
 from app.core.logging import logger
 from app.core.constants import AuctionStatus
-from app.database.session import AsyncSessionLocal
+from app.workers.db import get_worker_db
 from app.modules.auctions.models import AuctionModel
 from app.modules.bidding.service import BiddingService
 
 
 async def _check_scheduled_auctions():
-    async with AsyncSessionLocal() as db:
+    async with get_worker_db() as db:
         now = datetime.now(timezone.utc)
         stmt = (
             select(AuctionModel)
@@ -29,7 +29,7 @@ async def _check_scheduled_auctions():
 
 
 async def _finalize_expired_auctions():
-    async with AsyncSessionLocal() as db:
+    async with get_worker_db() as db:
         now = datetime.now(timezone.utc)
         stmt = (
             select(AuctionModel.id)

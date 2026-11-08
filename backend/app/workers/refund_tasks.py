@@ -5,7 +5,7 @@ from sqlalchemy import select
 from app.workers.celery_app import celery_app
 from app.core.logging import logger
 from app.core.constants import DepositStatus
-from app.database.session import AsyncSessionLocal
+from app.workers.db import get_worker_db
 from app.modules.auctions.models import AuctionModel
 from app.modules.deposits.models import DepositModel
 from app.modules.refunds.service import RefundService
@@ -13,7 +13,7 @@ from app.modules.refunds.service import RefundService
 
 async def _process_auction_refunds(auction_id_str: str):
     auc_id = uuid.UUID(auction_id_str)
-    async with AsyncSessionLocal() as db:
+    async with get_worker_db() as db:
         auction = await db.get(AuctionModel, auc_id)
         if not auction:
             logger.warning(f"Auction {auction_id_str} not found for refunds")

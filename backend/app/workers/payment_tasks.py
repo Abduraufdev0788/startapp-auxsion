@@ -5,14 +5,14 @@ from sqlalchemy import select
 from app.workers.celery_app import celery_app
 from app.core.logging import logger
 from app.core.constants import DepositStatus
-from app.database.session import AsyncSessionLocal
+from app.workers.db import get_worker_db
 from app.modules.auctions.models import AuctionResultModel
 from app.modules.deposits.models import DepositModel
 from app.modules.escrow.service import LedgerService
 
 
 async def _check_winner_payment_deadlines():
-    async with AsyncSessionLocal() as db:
+    async with get_worker_db() as db:
         now = datetime.now(timezone.utc)
         stmt = (
             select(AuctionResultModel)
