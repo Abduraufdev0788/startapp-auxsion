@@ -1,6 +1,6 @@
 import uuid
 from typing import List, Optional, Tuple
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -60,7 +60,11 @@ class AuctionRepository:
             count_query = count_query.where(AuctionModel.status == status)
 
         if search:
-            search_filter = ProductModel.title.ilike(f"%{search}%")
+            search_term = f"%{search.strip()}%"
+            search_filter = or_(
+                ProductModel.title.ilike(search_term),
+                ProductModel.description.ilike(search_term),
+            )
             query = query.where(search_filter)
             count_query = count_query.where(search_filter)
 

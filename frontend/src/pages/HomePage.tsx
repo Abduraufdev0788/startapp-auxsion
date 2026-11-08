@@ -1,11 +1,12 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Gavel,
   Clock,
   Flame,
   ArrowRight,
   Sparkles,
+  Search,
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -13,6 +14,9 @@ import { Badge } from '../components/ui/Badge';
 import { formatUZS } from '../utils/formatters';
 
 export const HomePage: React.FC = () => {
+  const [homeSearch, setHomeSearch] = useState('');
+  const navigate = useNavigate();
+
   // Sample featured auctions
   const featuredAuctions = [
     {
@@ -68,7 +72,34 @@ export const HomePage: React.FC = () => {
             AuctionHub orqali mahsulotingizni eng yuqori narxda soting yoki orzuingizdagi buyumni arzonroq narxda yutib oling.
           </p>
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* Search Bar */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (homeSearch.trim()) {
+                navigate(`/auctions?search=${encodeURIComponent(homeSearch.trim())}`);
+              } else {
+                navigate('/auctions');
+              }
+            }}
+            className="mt-8 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800 p-2"
+          >
+            <div className="flex-1 flex items-center pl-3">
+              <Search className="w-5 h-5 text-slate-400 mr-2 shrink-0" />
+              <input
+                type="text"
+                value={homeSearch}
+                onChange={(e) => setHomeSearch(e.target.value)}
+                placeholder="Qidiruv: iPhone 15, Chevrolet Tracker, MacBook..."
+                className="w-full bg-transparent border-none text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0"
+              />
+            </div>
+            <Button type="submit" size="md" className="rounded-xl px-5">
+              Qidirish
+            </Button>
+          </form>
+
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/auctions">
               <Button size="lg" className="w-full sm:w-auto shadow-lg shadow-emerald-500/25">
                 <Gavel className="w-5 h-5 mr-2" />
