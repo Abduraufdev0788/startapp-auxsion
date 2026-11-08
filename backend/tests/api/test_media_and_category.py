@@ -74,3 +74,4 @@ async def test_custom_category_and_media_upload_workflow(client: AsyncClient):
     assert any(u.endswith(".mp4") for u in urls)
     assert any(u.endswith(".jpg") for u in urls)
     assert any(u.endswith(".png") for u in urls)
+
