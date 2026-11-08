@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Union
 import jwt
@@ -59,6 +60,7 @@ def create_refresh_token(
 
     to_encode = {
         "sub": str(subject),
+        "jti": uuid.uuid4().hex,
         "iat": int(now.timestamp()),
         "exp": int(expire.timestamp()),
         "type": "refresh",

@@ -1,14 +1,18 @@
 from contextlib import asynccontextmanager
 import os
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.core.config import settings
+from app.core.exceptions import AuctionHubException
 from app.core.logging import logger, setup_logging
 from app.database.session import engine
 from app.websocket.router import router as ws_router
+from app.modules.auth.router import router as auth_router
+from app.modules.users.router import router as users_router
 
 
 @asynccontextmanager
@@ -41,12 +45,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Exception Handler
+@app.exception_handler(AuctionHubException)
+async def auctionhub_exception_handler(request: Request, exc: AuctionHubException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail, "error_code": exc.error_code},
+        headers=exc.headers,
+    )
+
+
 # Mount local media directory for uploads
 if os.path.exists(settings.LOCAL_STORAGE_PATH):
     app.mount("/media", StaticFiles(directory=settings.LOCAL_STORAGE_PATH), name="media")
 
-# Include WebSocket router
+# Include Routers
 app.include_router(ws_router, prefix=settings.API_V1_STR, tags=["Real-time WebSocket"])
+app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(users_router, prefix=settings.API_V1_STR)
 
 
 @app.get(
