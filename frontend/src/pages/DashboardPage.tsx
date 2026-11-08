@@ -764,47 +764,36 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
       {/* ================= MOBILE TOP HEADER SNIPPET ================= */}
-      <div className="lg:hidden p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-500/20 shrink-0">
-              {user?.full_name?.slice(0, 2).toUpperCase() || 'AH'}
-            </div>
-            <div className="min-w-0">
-              <h2 className="font-bold text-slate-900 dark:text-slate-100 truncate text-sm">
-                {user?.full_name || t.nav.cabinet}
-              </h2>
-              <p className="text-[11px] text-slate-400 truncate">{user?.phone}</p>
-            </div>
+      <div className="lg:hidden p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3">
+        <div className="flex items-center space-x-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-500/20 shrink-0">
+            {user?.full_name?.slice(0, 2).toUpperCase() || 'AH'}
           </div>
-          {/* Quick Balance */}
+          <div className="min-w-0">
+            <h2 className="font-bold text-slate-900 dark:text-slate-100 truncate text-sm">
+              {user?.full_name || t.nav.cabinet}
+            </h2>
+            <p className="text-[11px] text-slate-400 truncate">{user?.phone}</p>
+          </div>
+        </div>
+
+        {/* Quick Balance & Withdraw Button on Mobile */}
+        <div className="flex items-center space-x-2.5 shrink-0">
           <div className="text-right">
             <div className="text-[10px] text-slate-400 uppercase font-bold">{t.dashboard.availableBalance}</div>
             <div className="text-sm font-black text-emerald-600">
               {formatUZS(walletBalance?.balance_tiyin || 0)}
             </div>
           </div>
-        </div>
-
-        {/* Action Buttons on Mobile */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            variant="primary"
-            size="sm"
-            className="w-full text-xs font-bold py-2 shadow-md shadow-emerald-600/15"
-          >
-            <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-            <span>{t.dashboard.postNewLot}</span>
-          </Button>
           <Button
             onClick={() => setIsWithdrawalModalOpen(true)}
             variant="outline"
             size="sm"
-            className="w-full text-xs font-semibold py-2"
+            className="text-xs font-semibold py-1.5 px-2.5"
+            title={t.dashboard.withdraw}
           >
-            <ArrowUpRight className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
-            <span>{t.dashboard.withdraw}</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600 sm:mr-1" />
+            <span className="hidden sm:inline">{t.dashboard.withdraw}</span>
           </Button>
         </div>
       </div>
@@ -1174,6 +1163,7 @@ export const DashboardPage: React.FC = () => {
                   </p>
                 </div>
 
+                {/* Optional Mobile Bo'limlar button */}
                 <div className="flex items-center space-x-2">
                   <Button
                     onClick={() => setIsSectionsDrawerOpen(true)}
@@ -1183,15 +1173,6 @@ export const DashboardPage: React.FC = () => {
                   >
                     <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
                     <span>{t.dashboard.sidebarTitle || "Bo'limlar"}</span>
-                  </Button>
-                  <Button
-                    onClick={() => setIsModalOpen(true)}
-                    variant="primary"
-                    size="sm"
-                    className="shrink-0 text-xs font-bold shadow-md shadow-emerald-600/20"
-                  >
-                    <PlusCircle className="w-4 h-4 mr-1.5" />
-                    {t.dashboard.postNewLot}
                   </Button>
                 </div>
               </div>
@@ -2757,15 +2738,6 @@ export const DashboardPage: React.FC = () => {
           loadUserData();
         }}
       />
-
-      {/* ================= MOBILE FLOATING ACTION BUTTON (FAB) ================= */}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        title={t.dashboard.postNewLot}
-        className="lg:hidden fixed bottom-6 right-5 z-40 p-3.5 rounded-full bg-emerald-600 text-white shadow-2xl shadow-emerald-600/50 hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center ring-4 ring-white dark:ring-slate-900"
-      >
-        <PlusCircle className="w-6 h-6" />
-      </button>
     </div>
   );
 };
