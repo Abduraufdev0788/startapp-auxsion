@@ -368,3 +368,29 @@ export const adminService = {
     return res.data;
   },
 };
+
+export const favoritesService = {
+  async toggle(auctionId: string): Promise<{ auction_id: string; is_favorite: boolean }> {
+    const res = await apiClient.post<{ auction_id: string; is_favorite: boolean }>(
+      `/favorites/${auctionId}/toggle`
+    );
+    return res.data;
+  },
+
+  async getStatus(auctionId: string): Promise<{ auction_id: string; is_favorite: boolean }> {
+    const res = await apiClient.get<{ auction_id: string; is_favorite: boolean }>(
+      `/favorites/${auctionId}/status`
+    );
+    return res.data;
+  },
+
+  async list(): Promise<Auction[]> {
+    const res = await apiClient.get<Auction[]>('/favorites');
+    return res.data;
+  },
+
+  async getIds(): Promise<string[]> {
+    const res = await apiClient.get<string[]>('/favorites/ids');
+    return res.data;
+  },
+};

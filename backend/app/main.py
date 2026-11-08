@@ -25,6 +25,7 @@ from app.modules.notifications.router import router as notifications_router
 from app.modules.deliveries.router import router as deliveries_router
 from app.modules.disputes.router import router as disputes_router
 from app.modules.admin.router import router as admin_router
+from app.modules.favorites.router import router as favorites_router
 
 
 @asynccontextmanager
@@ -86,6 +87,7 @@ app.include_router(refunds_router, prefix=settings.API_V1_STR)
 app.include_router(notifications_router, prefix=settings.API_V1_STR)
 app.include_router(deliveries_router, prefix=settings.API_V1_STR)
 app.include_router(disputes_router, prefix=settings.API_V1_STR)
+app.include_router(favorites_router, prefix=settings.API_V1_STR)
 app.include_router(admin_router, prefix=settings.API_V1_STR)
 
 

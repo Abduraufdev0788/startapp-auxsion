@@ -106,7 +106,11 @@ export const Navbar: React.FC = () => {
                 </Link>
               )}
 
-              <Link to="/dashboard" className="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+              <Link
+                to="/dashboard?section=notifications"
+                title="Bildirishnomalar"
+                className="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

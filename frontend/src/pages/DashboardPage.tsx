@@ -27,6 +27,8 @@ import {
   Shield,
   Eye,
   Tag,
+  Heart,
+  Users,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -40,15 +42,18 @@ import {
   productsService,
   auctionsService,
   usersService,
+  favoritesService,
   getMediaUrl,
   isVideoMedia,
 } from '../services/api';
 import { Deposit, Notification, Category, Auction } from '../types';
 
 type DashboardSection =
+  | 'market'
   | 'participating'
   | 'created'
   | 'won'
+  | 'favorites'
   | 'all_auctions'
   | 'deposits'
   | 'notifications'
@@ -78,14 +83,17 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Active Section from URL or default to "participating"
+  // Active Section from URL or default to "market"
   const tabParam = searchParams.get('section') as DashboardSection | null;
-  const [activeSection, setActiveSection] = useState<DashboardSection>(tabParam || 'participating');
+  const [activeSection, setActiveSection] = useState<DashboardSection>(tabParam || 'market');
 
   // Auctions Data
+  const [marketAuctions, setMarketAuctions] = useState<Auction[]>([]);
   const [createdAuctions, setCreatedAuctions] = useState<Auction[]>([]);
   const [participatingAuctions, setParticipatingAuctions] = useState<Auction[]>([]);
   const [wonAuctions, setWonAuctions] = useState<Auction[]>([]);
+  const [favoriteAuctions, setFavoriteAuctions] = useState<Auction[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -161,6 +169,35 @@ export const DashboardPage: React.FC = () => {
     setSearchParams({ section });
   };
 
+  // Open modal if URL parameter is present
+  useEffect(() => {
+    if (searchParams.get('openModal') === 'true') {
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
+
+  // Handle Heart Favorite Toggle
+  const handleToggleFavorite = async (e: React.MouseEvent, auctionId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const res = await favoritesService.toggle(auctionId);
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (res.is_favorite) {
+          next.add(auctionId);
+        } else {
+          next.delete(auctionId);
+        }
+        return next;
+      });
+      // Refresh favorites list if currently in favorites tab
+      favoritesService.list().then(setFavoriteAuctions).catch(() => {});
+    } catch (err) {
+      console.error("Sevimlilarga qo'shishda xatolik:", err);
+    }
+  };
+
   // Load User and Marketplace Data
   const loadUserData = useCallback(async () => {
     setIsLoadingData(true);
@@ -169,6 +206,9 @@ export const DashboardPage: React.FC = () => {
         createdList,
         participatingList,
         wonList,
+        marketRes,
+        favList,
+        favIds,
         depList,
         notifList,
         catList,
@@ -176,6 +216,9 @@ export const DashboardPage: React.FC = () => {
         auctionsService.getMyCreated().catch(() => []),
         auctionsService.getMyParticipating().catch(() => []),
         auctionsService.getMyWon().catch(() => []),
+        auctionsService.list({ status: 'ACTIVE' }).catch(() => ({ items: [] })),
+        favoritesService.list().catch(() => []),
+        favoritesService.getIds().catch(() => []),
         depositsService.getMyDeposits().catch(() => []),
         notificationsService.list().catch(() => []),
         categoriesService.list().catch(() => []),
@@ -184,6 +227,9 @@ export const DashboardPage: React.FC = () => {
       setCreatedAuctions(createdList);
       setParticipatingAuctions(participatingList);
       setWonAuctions(wonList);
+      setMarketAuctions(marketRes.items || []);
+      setFavoriteAuctions(favList || []);
+      setFavoriteIds(new Set(favIds || []));
       setDeposits(depList);
       setNotifications(notifList);
       setCategories(catList);
@@ -481,12 +527,16 @@ export const DashboardPage: React.FC = () => {
 
   // Selected pool based on active section
   const currentPool =
-    activeSection === 'participating'
+    activeSection === 'market'
+      ? marketAuctions
+      : activeSection === 'participating'
       ? participatingAuctions
       : activeSection === 'created'
       ? createdAuctions
       : activeSection === 'won'
       ? wonAuctions
+      : activeSection === 'favorites'
+      ? favoriteAuctions
       : allUserAuctions;
 
   // Single Search, Filter & Sort Logic
@@ -527,9 +577,11 @@ export const DashboardPage: React.FC = () => {
     });
 
   const isAuctionView =
+    activeSection === 'market' ||
     activeSection === 'participating' ||
     activeSection === 'created' ||
     activeSection === 'won' ||
+    activeSection === 'favorites' ||
     activeSection === 'all_auctions';
 
   return (
@@ -572,6 +624,23 @@ export const DashboardPage: React.FC = () => {
           <Card className="p-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800/60">
             {/* Auksion bo'limlari */}
             <div className="space-y-1 p-1">
+              <button
+                onClick={() => handleSectionChange('market')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  activeSection === 'market'
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                }`}
+              >
+                <span className="flex items-center space-x-2.5">
+                  <Gavel className="w-4 h-4 text-emerald-600" />
+                  <span>Bozordagi lotlar</span>
+                </span>
+                <Badge variant={activeSection === 'market' ? 'success' : 'neutral'}>
+                  {marketAuctions.length}
+                </Badge>
+              </button>
+
               <button
                 onClick={() => handleSectionChange('participating')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
@@ -620,6 +689,23 @@ export const DashboardPage: React.FC = () => {
                 </span>
                 <Badge variant={activeSection === 'won' ? 'warning' : 'neutral'}>
                   {wonAuctions.length}
+                </Badge>
+              </button>
+
+              <button
+                onClick={() => handleSectionChange('favorites')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  activeSection === 'favorites'
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                }`}
+              >
+                <span className="flex items-center space-x-2.5">
+                  <Heart className="w-4 h-4 text-rose-500" />
+                  <span>Sevimlilar</span>
+                </span>
+                <Badge variant={activeSection === 'favorites' ? 'danger' : 'neutral'}>
+                  {favoriteAuctions.length}
                 </Badge>
               </button>
 
@@ -715,21 +801,29 @@ export const DashboardPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-extrabold tracking-tight">
-                    {activeSection === 'participating'
+                    {activeSection === 'market'
+                      ? 'Bozordagi faol auksionlar'
+                      : activeSection === 'participating'
                       ? 'Ishtirok etayotgan auksionlarim'
                       : activeSection === 'created'
                       ? 'Mening auksionlarim (Sotuvdagi lotlar)'
                       : activeSection === 'won'
                       ? 'Yutib olingan auksionlar'
-                      : 'Barcha auksionlarim'}
+                      : activeSection === 'favorites'
+                      ? 'Sevimli auksionlarim'
+                      : 'Barcha auksionlarim tarixi'}
                   </h1>
                   <p className="text-xs text-slate-500 mt-1">
-                    {activeSection === 'participating'
+                    {activeSection === 'market'
+                      ? 'Platformadagi hozirda ochiq barcha tekshirilgan lotlar va savdolar'
+                      : activeSection === 'participating'
                       ? 'Siz kafolat depozitini to\'lab taklif kiritgan barcha lotlar'
                       : activeSection === 'created'
                       ? 'O\'zingiz sotuvga qo\'ygan va faol savdoda bo\'lgan auksionlar'
                       : activeSection === 'won'
                       ? 'Siz eng yuqori narx taklifi berib yutib olgan lotlar'
+                      : activeSection === 'favorites'
+                      ? 'Sizga yoqqan va saqlab qo\'yilgan sevimli lotlar'
                       : 'Barcha ishtiroklar va sotuvdagi auksionlarning umumiy ro\'yxati'}
                   </p>
                 </div>
@@ -870,12 +964,16 @@ export const DashboardPage: React.FC = () => {
                   <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
                     {searchQuery || filterCategory !== 'all' || filterStatus !== 'all'
                       ? 'Filtr parametrlariga mos lotlar topilmadi'
+                      : activeSection === 'market'
+                      ? 'Hozircha ochiq auksionlar mavjud emas'
                       : activeSection === 'participating'
                       ? 'Siz hali birorta auksionda ishtirok etmadingiz'
                       : activeSection === 'created'
                       ? 'Siz hali sotuvga mahsulot qo\'ymadingiz'
                       : activeSection === 'won'
                       ? 'Hozircha yutib olingan lotlar mavjud emas'
+                      : activeSection === 'favorites'
+                      ? 'Sevimli auksionlar ro\'yxati bo\'sh'
                       : 'Auksionlar ro\'yxati bo\'sh'}
                   </h3>
                   <p className="text-xs text-slate-500 max-w-md mx-auto">
@@ -883,7 +981,11 @@ export const DashboardPage: React.FC = () => {
                       ? 'Filtrlarni tozalab ko\'ring yoki boshqa so\'z orqali qidiring.'
                       : activeSection === 'participating'
                       ? 'Bozordagi faol auksionlarni ko\'rib chiqing va kafolat depozitini to\'lab taklif bering.'
-                      : 'Yangi lot e\'lon qiling va auksion orqali mahsulotingizni qulay narxda soting.'}
+                      : activeSection === 'favorites'
+                      ? 'Sizga yoqqan lotlarni yurakcha tugmasi orqali saqlab qo\'yishingiz mumkin.'
+                      : activeSection === 'created'
+                      ? 'Yangi lot e\'lon qiling va auksion orqali mahsulotingizni qulay narxda soting.'
+                      : 'Auksionlar maydonini ko\'rib chiqing yoki o\'zingiz yangi lot yarating.'}
                   </p>
                   <div>
                     {activeSection === 'created' ? (
@@ -891,10 +993,29 @@ export const DashboardPage: React.FC = () => {
                         <PlusCircle className="w-4 h-4 mr-1.5" />
                         + Yangi lot joylash
                       </Button>
+                    ) : activeSection === 'market' ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setFilterCategory('all');
+                          setFilterStatus('all');
+                        }}
+                      >
+                        Filtrlarni tozalash
+                      </Button>
                     ) : (
-                      <Link to="/auctions">
-                        <Button variant="secondary">Auksionlarni ko'rish</Button>
-                      </Link>
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <Button onClick={() => handleSectionChange('market')}>
+                          <Gavel className="w-4 h-4 mr-1.5" />
+                          Bozordagi lotlarni ko'rish
+                        </Button>
+                        <Link to="/auctions">
+                          <Button variant="outline">
+                            Auksionlar bozoriga o'tish
+                          </Button>
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -934,7 +1055,7 @@ export const DashboardPage: React.FC = () => {
                             )}
 
                             {/* Status Badge */}
-                            <div className="absolute top-2.5 left-2.5 z-10">
+                            <div className="absolute top-2.5 left-2.5 z-10 flex items-center space-x-1.5">
                               <Badge
                                 variant={
                                   auc.status === 'ACTIVE'
@@ -943,7 +1064,7 @@ export const DashboardPage: React.FC = () => {
                                     ? 'success'
                                     : 'neutral'
                                 }
-                                className="backdrop-blur-md shadow-sm"
+                                className="backdrop-blur-md shadow-sm text-[10px]"
                               >
                                 {auc.status === 'ACTIVE'
                                   ? 'Faol'
@@ -955,9 +1076,22 @@ export const DashboardPage: React.FC = () => {
                               </Badge>
                             </div>
 
-                            {/* Timer / Participants Badge */}
-                            <div className="absolute top-2.5 right-2.5 z-10">
-                              <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-semibold px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                            {/* Heart Favorite Toggle Button */}
+                            <button
+                              onClick={(e) => handleToggleFavorite(e, auc.id)}
+                              title={favoriteIds.has(auc.id) ? "Sevimlilardan o'chirish" : "Sevimlilarga qo'shish"}
+                              className={`absolute top-2.5 right-2.5 z-10 p-1.5 rounded-lg backdrop-blur-md transition-all shadow-md ${
+                                favoriteIds.has(auc.id)
+                                  ? 'bg-rose-500 text-white scale-105'
+                                  : 'bg-black/50 text-white hover:bg-black/80'
+                              }`}
+                            >
+                              <Heart className={`w-3.5 h-3.5 ${favoriteIds.has(auc.id) ? 'fill-current' : ''}`} />
+                            </button>
+
+                            {/* Bottom overlay: Timer & Participants */}
+                            <div className="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between text-[10px] text-white font-medium">
+                              <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-lg flex items-center space-x-1">
                                 <Clock className="w-3 h-3 text-amber-400" />
                                 <span>
                                   {new Date(auc.end_time).toLocaleDateString([], {
@@ -965,6 +1099,10 @@ export const DashboardPage: React.FC = () => {
                                     day: 'numeric',
                                   })}
                                 </span>
+                              </div>
+                              <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                                <Users className="w-3 h-3 text-emerald-400" />
+                                <span>{auc.participant_count || 0}</span>
                               </div>
                             </div>
                           </div>

@@ -12,6 +12,7 @@ import {
   WifiOff,
   Film,
   Play,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -263,7 +264,22 @@ export const AuctionDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-4">
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center space-x-2 text-xs text-slate-500 pb-2">
+        <Link to="/" className="hover:text-emerald-600 transition-colors">
+          Bosh sahifa
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <Link to="/auctions" className="hover:text-emerald-600 transition-colors">
+          Auksionlar bozori
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="font-semibold text-slate-900 dark:text-slate-100 truncate max-w-xs sm:max-w-md">
+          {current.product?.title || 'Lot tafsilotlari'}
+        </span>
+      </div>
+
       {/* Live Connection Banner */}
       <div className="mb-4 flex items-center justify-between text-xs text-slate-500 bg-slate-50 dark:bg-slate-800/40 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800">
         <div className="flex items-center space-x-2">
