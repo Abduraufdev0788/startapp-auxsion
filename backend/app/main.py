@@ -18,6 +18,9 @@ from app.modules.products.router import router as products_router
 from app.modules.auctions.router import router as auctions_router
 from app.modules.participants.router import router as participants_router
 from app.modules.bidding.router import router as bidding_router
+from app.modules.payments.router import router as payments_router
+from app.modules.deposits.router import router as deposits_router
+from app.modules.refunds.router import router as refunds_router
 
 
 @asynccontextmanager
@@ -73,6 +76,9 @@ app.include_router(products_router, prefix=settings.API_V1_STR)
 app.include_router(auctions_router, prefix=settings.API_V1_STR)
 app.include_router(participants_router, prefix=settings.API_V1_STR)
 app.include_router(bidding_router, prefix=settings.API_V1_STR)
+app.include_router(payments_router, prefix=settings.API_V1_STR)
+app.include_router(deposits_router, prefix=settings.API_V1_STR)
+app.include_router(refunds_router, prefix=settings.API_V1_STR)
 
 
 @app.get(
