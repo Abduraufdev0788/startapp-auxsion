@@ -101,5 +101,7 @@ async def get_me(
         roles=[r.name for r in current_user.roles] if current_user.roles else [],
         is_active=current_user.is_active,
         is_verified=current_user.is_verified,
+        language=getattr(current_user.profile, 'language', 'uz') or 'uz' if current_user.profile else 'uz',
+        theme=getattr(current_user.profile, 'theme', 'light') or 'light' if current_user.profile else 'light',
     )
 

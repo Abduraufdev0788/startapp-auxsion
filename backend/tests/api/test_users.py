@@ -27,6 +27,8 @@ async def test_user_profile_get_and_update(client: AsyncClient):
         "city": "Samarqand",
         "bio": "Davlat arbobi va sarkarda",
         "email": "temur@samarqand.uz",
+        "theme": "dark",
+        "language": "ru",
     }
     patch_res = await client.patch("/api/v1/users/me", json=patch_payload, headers=headers)
     assert patch_res.status_code == 200
@@ -34,6 +36,8 @@ async def test_user_profile_get_and_update(client: AsyncClient):
     assert updated_data["profile"]["full_name"] == "Sohibqiron Amir Temur"
     assert updated_data["profile"]["city"] == "Samarqand"
     assert updated_data["profile"]["bio"] == "Davlat arbobi va sarkarda"
+    assert updated_data["profile"]["theme"] == "dark"
+    assert updated_data["profile"]["language"] == "ru"
     assert updated_data["email"] == "temur@samarqand.uz"
 
     # Public profile check

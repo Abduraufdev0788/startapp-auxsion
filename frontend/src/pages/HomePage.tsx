@@ -11,6 +11,7 @@ import {
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
+import { CountdownTimer } from '../components/common/CountdownTimer';
 import { formatUZS } from '../utils/formatters';
 import { useAuth } from '../app/providers';
 import { auctionsService, getMediaUrl } from '../services/api';
@@ -189,10 +190,9 @@ export const HomePage: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute top-3 left-3">
-                        <Badge variant="warning" className="backdrop-blur-md bg-amber-500/90 text-white border-none flex items-center space-x-1">
-                          <Clock className="w-3.5 h-3.5 mr-1" />
-                          <span>{item.status}</span>
-                        </Badge>
+                        <div className="backdrop-blur-md bg-black/70 text-white rounded-lg px-2.5 py-1 text-xs font-bold flex items-center shadow">
+                          <CountdownTimer targetDate={item.end_time} variant="compact" />
+                        </div>
                       </div>
                       <div className="absolute top-3 right-3">
                         <Badge variant="neutral" className="bg-black/60 text-white border-none backdrop-blur-md">

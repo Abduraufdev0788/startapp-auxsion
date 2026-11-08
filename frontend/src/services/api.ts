@@ -67,6 +67,8 @@ export interface UserMe {
   roles: string[];
   is_active: boolean;
   is_verified: boolean;
+  language?: string;
+  theme?: string;
 }
 
 export interface AuctionCreateDTO {
@@ -335,6 +337,8 @@ export const usersService = {
     city?: string;
     address?: string;
     bio?: string;
+    language?: string;
+    theme?: string;
   }): Promise<any> {
     const res = await apiClient.patch('/users/me', data);
     return res.data;

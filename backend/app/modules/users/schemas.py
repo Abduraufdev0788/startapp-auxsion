@@ -10,6 +10,8 @@ class UserProfileResponse(BaseModel):
     bio: Optional[str] = None
     city: Optional[str] = None
     address: Optional[str] = None
+    language: Optional[str] = "uz"
+    theme: Optional[str] = "light"
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -34,6 +36,8 @@ class UpdateUserProfileRequest(BaseModel):
     city: Optional[str] = Field(None, max_length=100)
     address: Optional[str] = Field(None, max_length=255)
     email: Optional[EmailStr] = None
+    language: Optional[str] = Field(None, max_length=10)
+    theme: Optional[str] = Field(None, max_length=10)
 
 
 class ChangePasswordRequest(BaseModel):

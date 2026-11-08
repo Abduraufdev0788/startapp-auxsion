@@ -1,20 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Gavel, Search, User, PlusCircle, LogOut, Bell, Shield, X } from 'lucide-react';
+import { Gavel, Search, User, PlusCircle, LogOut, Bell, Shield, X, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../app/providers';
+import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { notificationsService } from '../../services/api';
 
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [navSearch, setNavSearch] = useState<string>('');
+  const [langMenuOpen, setLangMenuOpen] = useState<boolean>(false);
+  const langMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   const hideNavSearch =
     location.pathname.startsWith('/dashboard') ||
     location.pathname.startsWith('/auctions');
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setLangMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -82,14 +98,62 @@ export const Navbar: React.FC = () => {
         )}
 
         {/* Actions */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Language Switcher */}
+          <div className="relative" ref={langMenuRef}>
+            <button
+              type="button"
+              onClick={() => setLangMenuOpen(!langMenuOpen)}
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700"
+              title="Tilni tanlash / Выбор языка / Language"
+            >
+              <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="uppercase">{language}</span>
+            </button>
+            {langMenuOpen && (
+              <div className="absolute right-0 mt-1.5 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-50">
+                {(['uz', 'ru', 'en'] as const).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => {
+                      setLanguage(lang);
+                      setLangMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-1.5 text-xs flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                      language === lang
+                        ? 'font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30'
+                        : 'text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    <span>{lang === 'uz' ? "O'zbekcha" : lang === 'ru' ? 'Русский' : 'English'}</span>
+                    {language === lang && <span className="text-emerald-600 text-xs font-bold">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? t.nav.lightMode : t.nav.darkMode}
+            className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-300 transition-colors"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+
           {isAuthenticated && user ? (
             <div className="flex items-center space-x-2">
               {isAdmin && (
                 <Link to="/admin">
                   <Button variant="outline" size="sm" className="text-amber-600 border-amber-300">
                     <Shield className="w-4 h-4 mr-1" />
-                    Admin
+                    {t.nav.admin}
                   </Button>
                 </Link>
               )}
@@ -108,13 +172,13 @@ export const Navbar: React.FC = () => {
               <Link to="/dashboard">
                 <Button variant="outline" size="sm">
                   <User className="w-4 h-4 mr-1.5 text-emerald-600" />
-                  <span>{user.full_name?.split(' ')[0] || 'Kabinet'}</span>
+                  <span>{user.full_name?.split(' ')[0] || t.nav.cabinet}</span>
                 </Button>
               </Link>
 
               <button
                 onClick={handleLogout}
-                title="Tizimdan chiqish"
+                title={t.nav.logout}
                 className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
@@ -125,13 +189,13 @@ export const Navbar: React.FC = () => {
               <Link to="/login">
                 <Button variant="outline" size="sm" className="hidden sm:inline-flex">
                   <User className="w-4 h-4 mr-1.5" />
-                  Kirish
+                  {t.nav.login}
                 </Button>
               </Link>
               <Link to="/register">
                 <Button variant="primary" size="sm">
                   <PlusCircle className="w-4 h-4 mr-1.5" />
-                  Ro'yxatdan o'tish
+                  {t.nav.register}
                 </Button>
               </Link>
             </>

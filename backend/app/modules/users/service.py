@@ -37,6 +37,8 @@ class UserService:
             city=data.city,
             address=data.address,
             email=str(data.email) if data.email else None,
+            language=data.language,
+            theme=data.theme,
         )
         await self.db.commit()
         return updated_user

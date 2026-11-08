@@ -91,6 +91,8 @@ class UserRepository:
         city: Optional[str] = None,
         address: Optional[str] = None,
         email: Optional[str] = None,
+        language: Optional[str] = None,
+        theme: Optional[str] = None,
     ) -> UserModel:
         if email is not None:
             user.email = email
@@ -110,6 +112,10 @@ class UserRepository:
             user.profile.city = city
         if address is not None:
             user.profile.address = address
+        if language is not None:
+            user.profile.language = language
+        if theme is not None:
+            user.profile.theme = theme
 
         await self.db.flush()
         return user

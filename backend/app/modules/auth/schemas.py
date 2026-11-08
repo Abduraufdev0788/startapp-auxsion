@@ -38,5 +38,7 @@ class AuthUserResponse(BaseModel):
     roles: List[str]
     is_active: bool
     is_verified: bool
+    language: str = "uz"
+    theme: str = "light"
 
     model_config = ConfigDict(from_attributes=True)

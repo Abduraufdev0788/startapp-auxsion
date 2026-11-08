@@ -17,6 +17,7 @@ import {
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
+import { CountdownTimer } from '../components/common/CountdownTimer';
 import { formatUZS } from '../utils/formatters';
 import { useAuth } from '../app/providers';
 import {
@@ -350,17 +351,9 @@ export const AuctionDetailsPage: React.FC = () => {
                   )}
 
                   <div className="absolute top-4 left-4 z-10">
-                    <Badge
-                      variant="warning"
-                      className="bg-amber-500/90 text-white border-none backdrop-blur-md px-3 py-1 text-sm font-bold flex items-center space-x-1.5 shadow"
-                    >
-                      <Clock className="w-4 h-4 mr-1" />
-                      <span>
-                        {current.status === 'ACTIVE'
-                          ? `Tugash vaqti: ${new Date(current.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                          : current.status}
-                      </span>
-                    </Badge>
+                    <div className="bg-black/75 text-white backdrop-blur-md px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center shadow-lg border border-white/10">
+                      <CountdownTimer targetDate={current.end_time} variant="badge" />
+                    </div>
                   </div>
 
                   {isVideo && (
@@ -487,6 +480,24 @@ export const AuctionDetailsPage: React.FC = () => {
               <h1 className="text-2xl font-extrabold mt-1 leading-snug">
                 {current.product?.title || 'Auksion mahsuloti'}
               </h1>
+            </div>
+
+            {/* Live Real-time Countdown Box */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg border border-slate-700/50">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <Clock className="w-4 h-4 animate-pulse" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                    Auksion tugashiga qoldi:
+                  </div>
+                  <div className="text-xs text-slate-200">
+                    Real-vaqt hisob-kitobi
+                  </div>
+                </div>
+              </div>
+              <CountdownTimer targetDate={current.end_time} variant="detailed" />
             </div>
 
             {/* Current Price Banner */}

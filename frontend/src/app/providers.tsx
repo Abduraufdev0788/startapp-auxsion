@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authService, UserMe } from '../services/api';
 import { authStore } from './store';
+import { ThemeProvider } from '../context/ThemeContext';
+import { LanguageProvider } from '../context/LanguageContext';
 
 interface AuthContextType {
   user: UserMe | null;
@@ -74,7 +76,11 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
         refreshUser,
       }}
     >
-      {children}
+      <ThemeProvider userTheme={user?.theme} isAuthenticated={isAuthenticated}>
+        <LanguageProvider userLanguage={user?.language} isAuthenticated={isAuthenticated}>
+          {children}
+        </LanguageProvider>
+      </ThemeProvider>
     </AuthContext.Provider>
   );
 };

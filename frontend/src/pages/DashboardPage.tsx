@@ -29,12 +29,18 @@ import {
   Tag,
   Heart,
   Users,
+  Sun,
+  Moon,
+  Globe,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { formatUZS } from '../utils/formatters';
 import { useAuth } from '../app/providers';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { CountdownTimer } from '../components/common/CountdownTimer';
 import {
   depositsService,
   notificationsService,
@@ -80,6 +86,8 @@ const UZBEKISTAN_REGIONS = [
 
 export const DashboardPage: React.FC = () => {
   const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -1096,16 +1104,10 @@ export const DashboardPage: React.FC = () => {
 
                             {/* Bottom overlay: Timer & Participants */}
                             <div className="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between text-[10px] text-white font-medium">
-                              <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-lg flex items-center space-x-1">
-                                <Clock className="w-3 h-3 text-amber-400" />
-                                <span>
-                                  {new Date(auc.end_time).toLocaleDateString([], {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  })}
-                                </span>
+                              <div className="bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-lg">
+                                <CountdownTimer targetDate={auc.end_time} variant="compact" />
                               </div>
-                              <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                              <div className="bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-lg flex items-center space-x-1">
                                 <Users className="w-3 h-3 text-emerald-400" />
                                 <span>{auc.participant_count || 0}</span>
                               </div>
@@ -1301,18 +1303,169 @@ export const DashboardPage: React.FC = () => {
           {activeSection === 'settings' && (
             <div className="space-y-8">
               <div>
-                <h1 className="text-2xl font-extrabold tracking-tight">Profil va Tizim sozlamalari</h1>
+                <h1 className="text-2xl font-extrabold tracking-tight">{t.settings.title}</h1>
                 <p className="text-xs text-slate-500 mt-1">
-                  Shaxsiy ma'lumotlaringizni tahrirlang, parolingizni o'zgartiring va xavfsizlik parametrlarini sozlang
+                  {t.settings.subtitle}
                 </p>
               </div>
+
+              {/* Mavzu (Theme) Sozlamalari */}
+              <Card className="p-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-3xl space-y-4">
+                <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <Sun className="w-5 h-5 text-amber-500" />
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                      {t.settings.appearanceTitle}
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      {t.settings.appearanceSubtitle}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setTheme('light')}
+                    className={`p-4 rounded-2xl border-2 text-left transition-all flex items-start space-x-3 ${
+                      theme === 'light'
+                        ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm ring-2 ring-emerald-500/20'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                    }`}
+                  >
+                    <div className={`p-2.5 rounded-xl ${theme === 'light' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                      <Sun className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                          {t.settings.lightTheme}
+                        </span>
+                        {theme === 'light' && (
+                          <Badge variant="success" className="text-[10px]">Faol</Badge>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {t.settings.lightThemeDesc}
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTheme('dark')}
+                    className={`p-4 rounded-2xl border-2 text-left transition-all flex items-start space-x-3 ${
+                      theme === 'dark'
+                        ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm ring-2 ring-emerald-500/20'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                    }`}
+                  >
+                    <div className={`p-2.5 rounded-xl ${theme === 'dark' ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                      <Moon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                          {t.settings.darkTheme}
+                        </span>
+                        {theme === 'dark' && (
+                          <Badge variant="success" className="text-[10px]">Faol</Badge>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {t.settings.darkThemeDesc}
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </Card>
+
+              {/* Til (Language) Sozlamalari */}
+              <Card className="p-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-3xl space-y-4">
+                <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <Globe className="w-5 h-5 text-emerald-600" />
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                      {t.settings.languageTitle}
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      {t.settings.languageSubtitle}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setLanguage('uz')}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all flex items-center space-x-3 ${
+                      language === 'uz'
+                        ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm ring-2 ring-emerald-500/20'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                    }`}
+                  >
+                    <span className="text-2xl">🇺🇿</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                          {t.settings.uzbek}
+                        </span>
+                        {language === 'uz' && <span className="text-emerald-600 text-xs font-bold">✓</span>}
+                      </div>
+                      <p className="text-[10px] text-slate-500 truncate">{t.settings.uzbekDesc}</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setLanguage('ru')}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all flex items-center space-x-3 ${
+                      language === 'ru'
+                        ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm ring-2 ring-emerald-500/20'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                    }`}
+                  >
+                    <span className="text-2xl">🇷🇺</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                          {t.settings.russian}
+                        </span>
+                        {language === 'ru' && <span className="text-emerald-600 text-xs font-bold">✓</span>}
+                      </div>
+                      <p className="text-[10px] text-slate-500 truncate">{t.settings.russianDesc}</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setLanguage('en')}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all flex items-center space-x-3 ${
+                      language === 'en'
+                        ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm ring-2 ring-emerald-500/20'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                    }`}
+                  >
+                    <span className="text-2xl">🇬🇧</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                          {t.settings.english}
+                        </span>
+                        {language === 'en' && <span className="text-emerald-600 text-xs font-bold">✓</span>}
+                      </div>
+                      <p className="text-[10px] text-slate-500 truncate">{t.settings.englishDesc}</p>
+                    </div>
+                  </button>
+                </div>
+              </Card>
 
               {/* 1. Shaxsiy profil ma'lumotlari */}
               <Card className="p-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-3xl space-y-5">
                 <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                   <User className="w-5 h-5 text-emerald-600" />
                   <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                    Shaxsiy profil ma'lumotlari
+                    {t.settings.profileTitle}
                   </h3>
                 </div>
 
@@ -1337,7 +1490,7 @@ export const DashboardPage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="font-semibold text-slate-700 dark:text-slate-300">
-                        To'liq ism-sharif (F.I.O) *
+                        {t.settings.fullName}
                       </label>
                       <input
                         type="text"
@@ -1351,7 +1504,7 @@ export const DashboardPage: React.FC = () => {
 
                     <div className="space-y-1.5">
                       <label className="font-semibold text-slate-700 dark:text-slate-300">
-                        Telefon raqami (Asosiy identifikator)
+                        {t.settings.phone}
                       </label>
                       <input
                         type="text"
@@ -1365,7 +1518,7 @@ export const DashboardPage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="font-semibold text-slate-700 dark:text-slate-300">
-                        Elektron pochta (Email)
+                        {t.settings.email}
                       </label>
                       <input
                         type="email"
@@ -1378,7 +1531,7 @@ export const DashboardPage: React.FC = () => {
 
                     <div className="space-y-1.5">
                       <label className="font-semibold text-slate-700 dark:text-slate-300">
-                        Hudud / Shahar *
+                        {t.settings.region}
                       </label>
                       <select
                         value={settingsCity}
@@ -1396,7 +1549,7 @@ export const DashboardPage: React.FC = () => {
 
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Yetkazib berish manzili
+                      {t.settings.address}
                     </label>
                     <input
                       type="text"
@@ -1409,7 +1562,7 @@ export const DashboardPage: React.FC = () => {
 
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      O'zingiz haqingizda qisqacha (Bio)
+                      {t.settings.bio}
                     </label>
                     <textarea
                       value={settingsBio}
@@ -1422,7 +1575,7 @@ export const DashboardPage: React.FC = () => {
 
                   <div className="flex justify-end pt-2">
                     <Button type="submit" isLoading={isSavingProfile} size="sm">
-                      Profilni saqlash
+                      {t.settings.saveProfile}
                     </Button>
                   </div>
                 </form>
@@ -1433,7 +1586,7 @@ export const DashboardPage: React.FC = () => {
                 <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                   <KeyRound className="w-5 h-5 text-amber-500" />
                   <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                    Xavfsizlik va Parolni yangilash
+                    {t.settings.securityTitle}
                   </h3>
                 </div>
 
@@ -1457,7 +1610,7 @@ export const DashboardPage: React.FC = () => {
                 <form onSubmit={handleChangePassword} className="space-y-4 text-xs max-w-lg">
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Joriy parol *
+                      {t.settings.currentPassword}
                     </label>
                     <input
                       type="password"
@@ -1472,7 +1625,7 @@ export const DashboardPage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="font-semibold text-slate-700 dark:text-slate-300">
-                        Yangi parol (kamida 8 belgi) *
+                        {t.settings.newPassword}
                       </label>
                       <input
                         type="password"
@@ -1486,7 +1639,7 @@ export const DashboardPage: React.FC = () => {
 
                     <div className="space-y-1.5">
                       <label className="font-semibold text-slate-700 dark:text-slate-300">
-                        Yangi parolni tasdiqlash *
+                        {t.settings.confirmPassword}
                       </label>
                       <input
                         type="password"
@@ -1501,7 +1654,7 @@ export const DashboardPage: React.FC = () => {
 
                   <div className="flex justify-end pt-2">
                     <Button type="submit" isLoading={isChangingPassword} size="sm">
-                      Parolni yangilash
+                      {t.settings.updatePassword}
                     </Button>
                   </div>
                 </form>
@@ -1512,7 +1665,7 @@ export const DashboardPage: React.FC = () => {
                 <div className="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                   <Bell className="w-5 h-5 text-rose-500" />
                   <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                    Bildirishnoma sozlamalari
+                    {t.settings.notifSettingsTitle}
                   </h3>
                 </div>
 
@@ -1520,7 +1673,7 @@ export const DashboardPage: React.FC = () => {
                   <label className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
                     <div>
                       <div className="font-bold text-slate-800 dark:text-slate-200">
-                        Yangi narx takliflari xabarlari
+                        {t.settings.bidOutbidNotif}
                       </div>
                       <div className="text-[11px] text-slate-400">
                         Siz qatnashayotgan yoki sotayotgan auksionda narx oshganda darhol xabar olish
@@ -1537,7 +1690,7 @@ export const DashboardPage: React.FC = () => {
                   <label className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
                     <div>
                       <div className="font-bold text-slate-800 dark:text-slate-200">
-                        G'oliblik va Savdo yakuni
+                        {t.settings.auctionEndNotif}
                       </div>
                       <div className="text-[11px] text-slate-400">
                         Auksion muddati tugaganda va g'olib aniqlanganda xabarnoma yuborish
@@ -1554,7 +1707,7 @@ export const DashboardPage: React.FC = () => {
                   <label className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
                     <div>
                       <div className="font-bold text-slate-800 dark:text-slate-200">
-                        Kafolat depoziti va qaytarishlar
+                        {t.settings.depositRefundNotif}
                       </div>
                       <div className="text-[11px] text-slate-400">
                         Depozit to'lovi qabul qilinganda va pul qaytarilganda bildirishnoma berish

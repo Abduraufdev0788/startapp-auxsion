@@ -44,6 +44,8 @@ class UserProfileModel(Base, TimestampMixin, UUIDPrimaryKeyMixin):
     bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     address: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    language: Mapped[str] = mapped_column(String(10), default="uz", nullable=False)
+    theme: Mapped[str] = mapped_column(String(10), default="light", nullable=False)
 
     user: Mapped["UserModel"] = relationship("UserModel", back_populates="profile")
 
