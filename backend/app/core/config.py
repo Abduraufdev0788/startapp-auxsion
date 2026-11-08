@@ -57,6 +57,20 @@ class Settings(BaseSettings):
     STORAGE_PROVIDER: str = "local"
     LOCAL_STORAGE_PATH: str = "./media_uploads"
 
+    # SMS Gateway (Uzbekistan: Eskiz.uz / Sandbox)
+    SMS_PROVIDER: str = "sandbox"
+    SMS_EMAIL: str = ""
+    SMS_PASSWORD: str = ""
+    SMS_FROM: str = "4546"
+
+    # SMTP Email
+    SMTP_HOST: str = "smtp.mailtrap.io"
+    SMTP_PORT: int = 2525
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "no-reply@auctionhub.uz"
+    SMTP_FROM_NAME: str = "AuctionHub"
+
     # Business Rules
     MIN_AUCTION_DURATION_HOURS: int = 1
     MAX_AUCTION_DURATION_DAYS: int = 30

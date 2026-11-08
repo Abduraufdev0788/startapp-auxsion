@@ -495,8 +495,8 @@ export const AuctionDetailsPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Right Column: Bidding Action & Seller Info */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Right Column: Bidding Action & Seller Info (Desktop Sticky & Fixed) */}
+        <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-20 self-start">
           <Card className="p-6 space-y-6 border-2 border-emerald-500/20">
             <div>
               <span className="text-xs text-slate-500 font-medium">{t.dashboard.auctionNum} #{current.id.slice(0, 8)}</span>

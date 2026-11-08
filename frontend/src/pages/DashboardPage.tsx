@@ -652,12 +652,160 @@ export const DashboardPage: React.FC = () => {
     activeSection === 'favorites' ||
     activeSection === 'all_auctions';
 
+  const sectionItems: {
+    id: DashboardSection;
+    label: string;
+    icon: React.ReactNode;
+    count?: number;
+    badgeVariant?: 'success' | 'warning' | 'danger' | 'neutral';
+  }[] = [
+    {
+      id: 'market',
+      label: t.dashboard.activeAuctions,
+      icon: <Gavel className="w-4 h-4 text-emerald-600" />,
+      count: marketAuctions.length,
+      badgeVariant: 'success',
+    },
+    {
+      id: 'participating',
+      label: t.dashboard.participating,
+      icon: <Radio className="w-4 h-4 text-emerald-500" />,
+      count: participatingAuctions.length,
+      badgeVariant: 'success',
+    },
+    {
+      id: 'created',
+      label: t.dashboard.myAuctions,
+      icon: <Package className="w-4 h-4 text-blue-500" />,
+      count: createdAuctions.length,
+      badgeVariant: 'success',
+    },
+    {
+      id: 'won',
+      label: t.dashboard.wonAuctions,
+      icon: <Trophy className="w-4 h-4 text-amber-500" />,
+      count: wonAuctions.length,
+      badgeVariant: 'warning',
+    },
+    {
+      id: 'favorites',
+      label: t.dashboard.favorites,
+      icon: <Heart className="w-4 h-4 text-rose-500" />,
+      count: favoriteAuctions.length,
+      badgeVariant: 'danger',
+    },
+    {
+      id: 'all_auctions',
+      label: t.dashboard.allMyAuctions,
+      icon: <Layers className="w-4 h-4 text-purple-500" />,
+      count: allUserAuctions.length,
+      badgeVariant: 'neutral',
+    },
+    {
+      id: 'deposits',
+      label: t.dashboard.deposits,
+      icon: <CreditCard className="w-4 h-4 text-teal-500" />,
+      count: deposits.length,
+      badgeVariant: 'neutral',
+    },
+    {
+      id: 'notifications',
+      label: t.dashboard.notifications,
+      icon: <Bell className="w-4 h-4 text-rose-500" />,
+      count: notifications.filter((n) => !n.is_read).length || notifications.length,
+      badgeVariant: notifications.filter((n) => !n.is_read).length > 0 ? 'danger' : 'neutral',
+    },
+    {
+      id: 'settings',
+      label: t.dashboard.settings,
+      icon: <Settings className="w-4 h-4 text-slate-500" />,
+    },
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* 2-Column Dashboard Layout: Left Sidebar + Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* ================= LEFT SIDEBAR ================= */}
-        <aside className="lg:col-span-3 space-y-4">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
+      {/* ================= MOBILE TOP HEADER SNIPPET ================= */}
+      <div className="lg:hidden p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-500/20 shrink-0">
+              {user?.full_name?.slice(0, 2).toUpperCase() || 'AH'}
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-bold text-slate-900 dark:text-slate-100 truncate text-sm">
+                {user?.full_name || t.nav.cabinet}
+              </h2>
+              <p className="text-[11px] text-slate-400 truncate">{user?.phone}</p>
+            </div>
+          </div>
+          {/* Quick Balance */}
+          <div className="text-right">
+            <div className="text-[10px] text-slate-400 uppercase font-bold">{t.dashboard.availableBalance}</div>
+            <div className="text-sm font-black text-emerald-600">
+              {formatUZS(walletBalance?.balance_tiyin || 0)}
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons on Mobile */}
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            variant="primary"
+            size="sm"
+            className="w-full text-xs font-bold py-2 shadow-md shadow-emerald-600/15"
+          >
+            <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
+            <span>{t.dashboard.postNewLot}</span>
+          </Button>
+          <Button
+            onClick={() => setIsWithdrawalModalOpen(true)}
+            variant="outline"
+            size="sm"
+            className="w-full text-xs font-semibold py-2"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+            <span>{t.dashboard.withdraw}</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* ================= MOBILE STICKY FIXED SECTIONS BAR ================= */}
+      <div className="lg:hidden sticky top-16 z-30 -mx-3 sm:-mx-6 px-3 sm:px-6 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-2 overflow-x-auto no-scrollbar">
+        {sectionItems.map((item) => {
+          const isActive = activeSection === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleSectionChange(item.id)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all shrink-0 ${
+                isActive
+                  ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/25 ring-2 ring-emerald-500/20'
+                  : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60'
+              }`}
+            >
+              <span className={isActive ? 'text-white' : ''}>{item.icon}</span>
+              <span>{item.label}</span>
+              {typeof item.count === 'number' && item.count > 0 && (
+                <span
+                  className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                  }`}
+                >
+                  {item.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 2-Column Dashboard Layout: Left Sidebar (Desktop Fixed) + Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        {/* ================= LEFT SIDEBAR (Desktop Sticky & Fixed) ================= */}
+        <aside className="hidden lg:block lg:col-span-3 space-y-4 lg:sticky lg:top-20 self-start max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar">
           {/* User Profile Mini Card */}
           <Card className="p-5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center space-x-3.5">
@@ -692,158 +840,58 @@ export const DashboardPage: React.FC = () => {
           <Card className="p-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800/60">
             {/* Auksion bo'limlari */}
             <div className="space-y-1 p-1">
-              <button
-                onClick={() => handleSectionChange('market')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'market'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <Gavel className="w-4 h-4 text-emerald-600" />
-                  <span>{t.dashboard.activeAuctions}</span>
-                </span>
-                <Badge variant={activeSection === 'market' ? 'success' : 'neutral'}>
-                  {marketAuctions.length}
-                </Badge>
-              </button>
-
-              <button
-                onClick={() => handleSectionChange('participating')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'participating'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <Radio className="w-4 h-4 text-emerald-500" />
-                  <span>{t.dashboard.participating}</span>
-                </span>
-                <Badge variant={activeSection === 'participating' ? 'success' : 'neutral'}>
-                  {participatingAuctions.length}
-                </Badge>
-              </button>
-
-              <button
-                onClick={() => handleSectionChange('created')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'created'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <Package className="w-4 h-4 text-blue-500" />
-                  <span>{t.dashboard.myAuctions}</span>
-                </span>
-                <Badge variant={activeSection === 'created' ? 'success' : 'neutral'}>
-                  {createdAuctions.length}
-                </Badge>
-              </button>
-
-              <button
-                onClick={() => handleSectionChange('won')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'won'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <Trophy className="w-4 h-4 text-amber-500" />
-                  <span>{t.dashboard.wonAuctions}</span>
-                </span>
-                <Badge variant={activeSection === 'won' ? 'warning' : 'neutral'}>
-                  {wonAuctions.length}
-                </Badge>
-              </button>
-
-              <button
-                onClick={() => handleSectionChange('favorites')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'favorites'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <Heart className="w-4 h-4 text-rose-500" />
-                  <span>{t.dashboard.favorites}</span>
-                </span>
-                <Badge variant={activeSection === 'favorites' ? 'danger' : 'neutral'}>
-                  {favoriteAuctions.length}
-                </Badge>
-              </button>
-
-              <button
-                onClick={() => handleSectionChange('all_auctions')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'all_auctions'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <Layers className="w-4 h-4 text-purple-500" />
-                  <span>{t.dashboard.allMyAuctions}</span>
-                </span>
-                <Badge variant="neutral">{allUserAuctions.length}</Badge>
-              </button>
+              {sectionItems.slice(0, 6).map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSectionChange(item.id)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      isActive
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                    }`}
+                  >
+                    <span className="flex items-center space-x-2.5">
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </span>
+                    {typeof item.count === 'number' && (
+                      <Badge variant={isActive ? (item.badgeVariant || 'success') : 'neutral'}>
+                        {item.count}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Moliya va Sozlamalar */}
             <div className="space-y-1 p-1 pt-2">
-              <button
-                onClick={() => handleSectionChange('deposits')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'deposits'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <CreditCard className="w-4 h-4 text-teal-500" />
-                  <span>{t.dashboard.deposits}</span>
-                </span>
-                <Badge variant="neutral">{deposits.length}</Badge>
-              </button>
-
-              <button
-                onClick={() => handleSectionChange('notifications')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'notifications'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <Bell className="w-4 h-4 text-rose-500" />
-                  <span>{t.dashboard.notifications}</span>
-                </span>
-                {notifications.filter((n) => !n.is_read).length > 0 ? (
-                  <Badge variant="danger">
-                    {notifications.filter((n) => !n.is_read).length} {t.dashboard.newBadge}
-                  </Badge>
-                ) : (
-                  <Badge variant="neutral">{notifications.length}</Badge>
-                )}
-              </button>
-
-              <button
-                onClick={() => handleSectionChange('settings')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeSection === 'settings'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <span className="flex items-center space-x-2.5">
-                  <Settings className="w-4 h-4 text-slate-500" />
-                  <span>{t.dashboard.settings}</span>
-                </span>
-              </button>
+              {sectionItems.slice(6).map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSectionChange(item.id)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      isActive
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                    }`}
+                  >
+                    <span className="flex items-center space-x-2.5">
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </span>
+                    {typeof item.count === 'number' && (
+                      <Badge variant={isActive ? (item.badgeVariant || 'neutral') : 'neutral'}>
+                        {item.count}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </Card>
 
@@ -880,7 +928,7 @@ export const DashboardPage: React.FC = () => {
         </aside>
 
         {/* ================= MAIN CONTENT AREA ================= */}
-        <main className="lg:col-span-9 space-y-6">
+        <main className="col-span-1 lg:col-span-9 space-y-6 min-w-0">
           {/* ================= 1. AUCTIONS VIEW (Kirishi bilanoq mahsulotlar chiqadi) ================= */}
           {isAuctionView && (
             <div className="space-y-6">
@@ -2430,6 +2478,15 @@ export const DashboardPage: React.FC = () => {
           loadUserData();
         }}
       />
+
+      {/* ================= MOBILE FLOATING ACTION BUTTON (FAB) ================= */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        title={t.dashboard.postNewLot}
+        className="lg:hidden fixed bottom-6 right-5 z-40 p-3.5 rounded-full bg-emerald-600 text-white shadow-2xl shadow-emerald-600/50 hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center ring-4 ring-white dark:ring-slate-900"
+      >
+        <PlusCircle className="w-6 h-6" />
+      </button>
     </div>
   );
 };
