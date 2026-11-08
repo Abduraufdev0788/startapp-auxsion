@@ -6,6 +6,7 @@ from app.database.session import get_db
 from app.modules.auth.dependencies import get_current_active_user
 from app.modules.users.models import UserModel
 from app.modules.users.schemas import (
+    ChangePasswordRequest,
     UpdateUserProfileRequest,
     UserProfileResponse,
     UserResponse,
@@ -59,6 +60,21 @@ async def update_my_profile(
         profile=UserProfileResponse.model_validate(updated.profile) if updated.profile else None,
         roles=[r.name for r in updated.roles] if updated.roles else [],
     )
+
+
+@router.post(
+    "/me/change-password",
+    status_code=status.HTTP_200_OK,
+    summary="Parolni o'zgartirish",
+)
+async def change_password(
+    data: ChangePasswordRequest,
+    current_user: UserModel = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = UserService(db)
+    await service.change_password(current_user, data.old_password, data.new_password)
+    return {"message": "Parol muvaffaqiyatli o'zgartirildi"}
 
 
 @router.get(

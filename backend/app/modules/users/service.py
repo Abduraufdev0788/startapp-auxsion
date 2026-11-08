@@ -41,3 +41,18 @@ class UserService:
         await self.db.commit()
         return updated_user
 
+    async def change_password(
+        self, current_user: UserModel, old_password: str, new_password: str
+    ) -> None:
+        from app.core.security import verify_password, get_password_hash
+        from app.core.exceptions import BadRequestException
+
+        if not verify_password(old_password, current_user.hashed_password):
+            raise BadRequestException("Amaldagi parol noto'g'ri kiritildi", error_code="INVALID_OLD_PASSWORD")
+
+        if len(new_password) < 8:
+            raise BadRequestException("Yangi parol kamida 8 ta belgidan iborat bo'lishi shart", error_code="WEAK_PASSWORD")
+
+        current_user.hashed_password = get_password_hash(new_password)
+        await self.db.commit()
+

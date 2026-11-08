@@ -34,3 +34,8 @@ class UpdateUserProfileRequest(BaseModel):
     city: Optional[str] = Field(None, max_length=100)
     address: Optional[str] = Field(None, max_length=255)
     email: Optional[EmailStr] = None
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=8)

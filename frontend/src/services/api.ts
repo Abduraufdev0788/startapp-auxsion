@@ -323,6 +323,29 @@ export const isVideoMedia = (url?: string): boolean => {
   return /\.(mp4|webm|ogg|mov|avi|mkv)(\?.*)?$/i.test(url);
 };
 
+export const usersService = {
+  async getMyProfile(): Promise<any> {
+    const res = await apiClient.get('/users/me');
+    return res.data;
+  },
+
+  async updateProfile(data: {
+    full_name?: string;
+    email?: string;
+    city?: string;
+    address?: string;
+    bio?: string;
+  }): Promise<any> {
+    const res = await apiClient.patch('/users/me', data);
+    return res.data;
+  },
+
+  async changePassword(data: { old_password: string; new_password: string }): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>('/users/me/change-password', data);
+    return res.data;
+  },
+};
+
 export const adminService = {
   async getDashboard(): Promise<any> {
     const res = await apiClient.get('/admin/dashboard');

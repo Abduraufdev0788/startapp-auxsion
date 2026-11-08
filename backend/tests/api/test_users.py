@@ -42,3 +42,20 @@ async def test_user_profile_get_and_update(client: AsyncClient):
     assert public_res.status_code == 200
     assert public_res.json()["profile"]["full_name"] == "Sohibqiron Amir Temur"
 
+    # Change password
+    pwd_res = await client.post(
+        "/api/v1/users/me/change-password",
+        json={"old_password": "Password123", "new_password": "NewSecretPassword123!"},
+        headers=headers,
+    )
+    assert pwd_res.status_code == 200
+    assert pwd_res.json()["message"] == "Parol muvaffaqiyatli o'zgartirildi"
+
+    # Login with new password
+    login_res = await client.post(
+        "/api/v1/auth/login",
+        json={"phone": "+998901110022", "password": "NewSecretPassword123!"},
+    )
+    assert login_res.status_code == 200
+    assert "access_token" in login_res.json()
+
