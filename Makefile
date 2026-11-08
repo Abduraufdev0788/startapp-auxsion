@@ -22,6 +22,9 @@ logs: ## Konteynerlar loglarini kuzatish
 migrate: ## Baza migratsiyalarini qo'llash (Alembic)
 	docker compose exec backend alembic upgrade head
 
+seed: ## Baza uchun boshlang'ich demo ma'lumotlarni yuklash (Kategoriyalar, lotlar, foydalanuvchilar)
+	docker compose exec backend python -m app.database.seed
+
 test-backend: ## Backend testlarini ishga tushirish
 	docker compose exec backend pytest
 
