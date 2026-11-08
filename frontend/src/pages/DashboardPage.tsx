@@ -36,6 +36,11 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Receipt,
+  Check,
+  ChevronDown,
+  ArrowUpDown,
+  SlidersHorizontal,
+  LayoutGrid,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -154,12 +159,44 @@ export const DashboardPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
 
+  // Mobile & Quick Sections Drawer / Bottom Sheet Modal
+  const [isSectionsDrawerOpen, setIsSectionsDrawerOpen] = useState<boolean>(false);
+
   useEffect(() => {
     const s = searchParams.get('search');
     const c = searchParams.get('category');
     if (s !== null) setSearchQuery(s);
     if (c !== null) setFilterCategory(c);
   }, [searchParams]);
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const newParams = new URLSearchParams(searchParams);
+    if (searchQuery.trim()) {
+      newParams.set('search', searchQuery.trim());
+    } else {
+      newParams.delete('search');
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('search');
+    setSearchParams(newParams);
+  };
+
+  const handleCategorySelect = (catId: string) => {
+    setFilterCategory(catId);
+    const newParams = new URLSearchParams(searchParams);
+    if (catId !== 'all') {
+      newParams.set('category', catId);
+    } else {
+      newParams.delete('category');
+    }
+    setSearchParams(newParams);
+  };
 
   // OLX-Style Selling Modal State
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -722,6 +759,8 @@ export const DashboardPage: React.FC = () => {
     },
   ];
 
+  const activeSectionItem = sectionItems.find((s) => s.id === activeSection) || sectionItems[0];
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
       {/* ================= MOBILE TOP HEADER SNIPPET ================= */}
@@ -770,37 +809,209 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ================= MOBILE STICKY FIXED SECTIONS BAR ================= */}
-      <div className="lg:hidden sticky top-16 z-30 -mx-3 sm:-mx-6 px-3 sm:px-6 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-2 overflow-x-auto no-scrollbar">
-        {sectionItems.map((item) => {
-          const isActive = activeSection === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleSectionChange(item.id)}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-all shrink-0 ${
-                isActive
-                  ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/25 ring-2 ring-emerald-500/20'
-                  : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60'
-              }`}
-            >
-              <span className={isActive ? 'text-white' : ''}>{item.icon}</span>
-              <span>{item.label}</span>
-              {typeof item.count === 'number' && item.count > 0 && (
-                <span
-                  className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
-                  }`}
-                >
-                  {item.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      {/* ================= MOBILE / TABLET STICKY SECTIONS BUTTON BAR ================= */}
+      <div className="lg:hidden sticky top-16 z-30 -mx-3 sm:-mx-6 px-3 sm:px-6 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2.5">
+        <button
+          type="button"
+          onClick={() => setIsSectionsDrawerOpen(true)}
+          className="flex-1 flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:border-emerald-500 active:scale-[0.99] transition-all text-left shadow-sm"
+        >
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-600/30">
+              <LayoutGrid className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block leading-none">
+                {t.dashboard.sidebarTitle || "Bo'limlar"}
+              </span>
+              <span className="text-xs font-black text-slate-900 dark:text-white truncate block mt-0.5 leading-none">
+                {activeSectionItem.label}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-1.5 shrink-0 ml-2">
+            {typeof activeSectionItem.count === 'number' && (
+              <Badge variant={activeSectionItem.badgeVariant || 'success'}>
+                {activeSectionItem.count}
+              </Badge>
+            )}
+            <div className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-slate-500 shadow-xs">
+              <ChevronDown className="w-3.5 h-3.5" />
+            </div>
+          </div>
+        </button>
+
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          variant="primary"
+          size="sm"
+          className="shrink-0 text-xs py-2.5 px-3.5 bg-emerald-600 hover:bg-emerald-700 font-bold rounded-2xl shadow-md shadow-emerald-600/20 flex items-center space-x-1"
+        >
+          <PlusCircle className="w-4 h-4 sm:mr-1" />
+          <span className="hidden sm:inline">{t.dashboard.postNewLot}</span>
+        </Button>
       </div>
+
+      {/* ================= SECTIONS DRAWER / BOTTOM SHEET MODAL ================= */}
+      {isSectionsDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsSectionsDrawerOpen(false)}
+          />
+
+          {/* Modal / Bottom Sheet Box */}
+          <div className="relative w-full sm:max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom duration-200 z-10">
+            {/* Mobile drag handle */}
+            <div className="sm:hidden pt-3 pb-1 flex justify-center">
+              <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+            </div>
+
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold">
+                  <LayoutGrid className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                    {t.dashboard.sidebarTitle || "Bo'limlar"}
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Kerakli bo'limni tanlang
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSectionsDrawerOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable List of Sections */}
+            <div className="p-4 overflow-y-auto space-y-4 flex-1">
+              {/* User Quick Info & Balance */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
+                <div className="flex items-center space-x-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                    {user?.full_name?.slice(0, 2).toUpperCase() || 'AH'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {user?.full_name || t.nav.cabinet}
+                    </div>
+                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold truncate">
+                      {t.dashboard.walletTitle}: {formatUZS(walletBalance?.balance_tiyin || 0)}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSectionsDrawerOpen(false);
+                    setIsWithdrawalModalOpen(true);
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                >
+                  {t.dashboard.withdraw}
+                </button>
+              </div>
+
+              {/* Group 1: Auksionlar va Savdolar */}
+              <div className="space-y-1">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 px-2 py-1">
+                  Savdolar va Auksionlar
+                </div>
+                {sectionItems.slice(0, 6).map((item) => {
+                  const isActive = activeSection === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        handleSectionChange(item.id);
+                        setIsSectionsDrawerOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold border border-emerald-200/80 dark:border-emerald-800'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className={`p-2 rounded-xl ${
+                          isActive
+                            ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                        }`}>
+                          {item.icon}
+                        </span>
+                        <span className="text-xs font-bold">{item.label}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {typeof item.count === 'number' && (
+                          <Badge variant={isActive ? (item.badgeVariant || 'success') : 'neutral'}>
+                            {item.count}
+                          </Badge>
+                        )}
+                        {isActive && <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Group 2: Moliya va Sozlamalar */}
+              <div className="space-y-1">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 px-2 py-1">
+                  Moliya va Sozlamalar
+                </div>
+                {sectionItems.slice(6).map((item) => {
+                  const isActive = activeSection === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        handleSectionChange(item.id);
+                        setIsSectionsDrawerOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold border border-emerald-200/80 dark:border-emerald-800'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className={`p-2 rounded-xl ${
+                          isActive
+                            ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                        }`}>
+                          {item.icon}
+                        </span>
+                        <span className="text-xs font-bold">{item.label}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {typeof item.count === 'number' && (
+                          <Badge variant={isActive ? (item.badgeVariant || 'neutral') : 'neutral'}>
+                            {item.count}
+                          </Badge>
+                        )}
+                        {isActive && <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2-Column Dashboard Layout: Left Sidebar (Desktop Fixed) + Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
@@ -965,10 +1176,19 @@ export const DashboardPage: React.FC = () => {
 
                 <div className="flex items-center space-x-2">
                   <Button
+                    onClick={() => setIsSectionsDrawerOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="lg:hidden text-xs font-semibold"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                    <span>{t.dashboard.sidebarTitle || "Bo'limlar"}</span>
+                  </Button>
+                  <Button
                     onClick={() => setIsModalOpen(true)}
                     variant="primary"
                     size="sm"
-                    className="shrink-0 text-xs"
+                    className="shrink-0 text-xs font-bold shadow-md shadow-emerald-600/20"
                   >
                     <PlusCircle className="w-4 h-4 mr-1.5" />
                     {t.dashboard.postNewLot}
@@ -976,110 +1196,169 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* SINGLE UNIFIED FILTER & SEARCH BAR */}
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  {/* Single Search Input */}
-                  <div className="relative flex-1">
-                    <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={t.nav.searchPlaceholder}
-                      className="w-full pl-10 pr-9 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                    />
+              {/* ================= REDESIGNED MARKETPLACE SEARCH & FILTER HERO ================= */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
+                {/* 1. Main Search Bar Input */}
+                <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+                  <div className="absolute left-3.5 sm:left-4 flex items-center pointer-events-none text-emerald-600 dark:text-emerald-400">
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t.auctions.searchPlaceholder || "Lot nomi yoki parametr bo'yicha qidirish..."}
+                    className="w-full pl-10 sm:pl-12 pr-24 sm:pr-28 py-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-900 dark:text-white placeholder-slate-400 shadow-inner transition-all outline-none"
+                  />
+                  <div className="absolute right-1.5 sm:right-2 flex items-center space-x-1">
                     {searchQuery && (
                       <button
                         type="button"
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        onClick={handleClearSearch}
+                        className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                        title="Tozalash"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <X className="w-4 h-4" />
                       </button>
                     )}
+                    <button
+                      type="submit"
+                      className="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center space-x-1"
+                    >
+                      <span>{t.common.search || 'Qidirish'}</span>
+                    </button>
+                  </div>
+                </form>
+
+                {/* 2. Interactive Category Pills Carousel */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => handleCategorySelect('all')}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 ${
+                      filterCategory === 'all'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20 ring-2 ring-emerald-500/20'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60'
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span>{t.dashboard.allCategories}</span>
+                  </button>
+                  {categories.map((c) => {
+                    const isSelected = filterCategory === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => handleCategorySelect(c.id)}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center space-x-1.5 shrink-0 ${
+                          isSelected
+                            ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20 ring-2 ring-emerald-500/20'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60'
+                        }`}
+                      >
+                        <span>{c.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 3. Sub-Bar: Segmented Status Controls + Custom Styled Sort */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                  {/* Status Pills */}
+                  <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 overflow-x-auto no-scrollbar shrink-0">
+                    {[
+                      { id: 'all', label: t.dashboard.allStatuses },
+                      { id: 'ACTIVE', label: t.common.active, hasDot: true },
+                      { id: 'SCHEDULED', label: t.dashboard.scheduledStatus },
+                      { id: 'COMPLETED', label: t.common.completed },
+                    ].map((st) => {
+                      const isCurrent = filterStatus === st.id;
+                      return (
+                        <button
+                          key={st.id}
+                          type="button"
+                          onClick={() => setFilterStatus(st.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center space-x-1.5 ${
+                            isCurrent
+                              ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 font-bold shadow-sm'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                          }`}
+                        >
+                          {st.hasDot && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          )}
+                          <span>{st.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {/* Toifa (Category) Filter */}
-                  <div className="w-full sm:w-44">
-                    <select
-                      value={filterCategory}
-                      onChange={(e) => setFilterCategory(e.target.value)}
-                      className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                    >
-                      <option value="all">{t.dashboard.allCategories}</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Status Filter */}
-                  <div className="w-full sm:w-36">
-                    <select
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                      className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                    >
-                      <option value="all">{t.dashboard.allStatuses}</option>
-                      <option value="ACTIVE">{t.common.active}</option>
-                      <option value="SCHEDULED">{t.dashboard.scheduledStatus}</option>
-                      <option value="COMPLETED">{t.common.completed}</option>
-                    </select>
-                  </div>
-
-                  {/* Sort Filter */}
-                  <div className="w-full sm:w-40">
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                    >
-                      <option value="newest">{t.dashboard.sortNewest}</option>
-                      <option value="ending_soon">{t.dashboard.sortEndingSoon}</option>
-                      <option value="price_asc">{t.dashboard.sortPriceAsc}</option>
-                      <option value="price_desc">{t.dashboard.sortPriceDesc}</option>
-                      <option value="bids_count">{t.dashboard.sortBidsCount}</option>
-                    </select>
+                  {/* Sleek Sort Picker */}
+                  <div className="flex items-center space-x-2 self-end sm:self-auto">
+                    <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+                      Saralash:
+                    </span>
+                    <div className="relative flex items-center">
+                      <ArrowUpDown className="w-3.5 h-3.5 absolute left-3 text-emerald-600 dark:text-emerald-400 pointer-events-none" />
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="pl-8 pr-7 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:border-emerald-500 focus:ring-2 focus:ring-emerald-500 appearance-none outline-none cursor-pointer transition-colors shadow-xs"
+                      >
+                        <option value="newest">{t.dashboard.sortNewest}</option>
+                        <option value="ending_soon">{t.dashboard.sortEndingSoon}</option>
+                        <option value="price_asc">{t.dashboard.sortPriceAsc}</option>
+                        <option value="price_desc">{t.dashboard.sortPriceDesc}</option>
+                        <option value="bids_count">{t.dashboard.sortBidsCount}</option>
+                      </select>
+                      <ChevronDown className="w-3.5 h-3.5 absolute right-2 text-slate-400 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
-                {/* Active Filter Tags */}
-                {(searchQuery || filterCategory !== 'all' || filterStatus !== 'all') && (
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 flex-wrap">
-                    <span>{t.dashboard.activeFilters}</span>
-                    {searchQuery && (
-                      <span className="bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 px-2.5 py-0.5 rounded-lg flex items-center font-medium">
-                        "{searchQuery}"
-                        <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setSearchQuery('')} />
-                      </span>
+                {/* 4. Active Filters Summary & Badges */}
+                <div className="flex items-center justify-between text-xs text-slate-500 pt-1 flex-wrap gap-2">
+                  <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                    <span className="font-medium text-slate-600 dark:text-slate-400">
+                      Natijalar: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{filteredAuctions.length}</strong> ta auksion
+                    </span>
+                    {(searchQuery || filterCategory !== 'all' || filterStatus !== 'all') && (
+                      <>
+                        <span className="text-slate-300 dark:text-slate-700">|</span>
+                        {searchQuery && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[11px] font-medium">
+                            "{searchQuery}"
+                            <X className="w-3 h-3 ml-1 cursor-pointer hover:text-emerald-900" onClick={handleClearSearch} />
+                          </span>
+                        )}
+                        {filterCategory !== 'all' && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] font-medium">
+                            {categories.find((c) => c.id === filterCategory)?.name}
+                            <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => handleCategorySelect('all')} />
+                          </span>
+                        )}
+                        {filterStatus !== 'all' && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] font-medium">
+                            {filterStatus === 'ACTIVE' ? t.common.active : filterStatus === 'SCHEDULED' ? t.dashboard.scheduledStatus : filterStatus === 'COMPLETED' ? t.common.completed : filterStatus}
+                            <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setFilterStatus('all')} />
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleClearSearch();
+                            handleCategorySelect('all');
+                            setFilterStatus('all');
+                          }}
+                          className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-[11px] ml-1"
+                        >
+                          {t.dashboard.clearFilters}
+                        </button>
+                      </>
                     )}
-                    {filterCategory !== 'all' && (
-                      <span className="bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg flex items-center font-medium">
-                        {categories.find((c) => c.id === filterCategory)?.name || t.common.all}
-                        <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setFilterCategory('all')} />
-                      </span>
-                    )}
-                    {filterStatus !== 'all' && (
-                      <span className="bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg flex items-center font-medium">
-                        {t.common.status}: {filterStatus === 'ACTIVE' ? t.common.active : filterStatus === 'COMPLETED' ? t.common.completed : filterStatus === 'SCHEDULED' ? t.dashboard.scheduledStatus : filterStatus}
-                        <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setFilterStatus('all')} />
-                      </span>
-                    )}
-                    <button
-                      onClick={() => {
-                        setSearchQuery('');
-                        setFilterCategory('all');
-                        setFilterStatus('all');
-                      }}
-                      className="text-emerald-600 hover:underline font-semibold ml-auto text-xs"
-                    >
-                      {t.dashboard.clearFilters}
-                    </button>
                   </div>
-                )}
+                </div>
               </div>
 
               {/* AUCTION PRODUCTS LISTING / GRID */}
