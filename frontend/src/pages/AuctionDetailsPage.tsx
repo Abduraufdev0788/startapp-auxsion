@@ -271,8 +271,8 @@ export const AuctionDetailsPage: React.FC = () => {
           Bosh sahifa
         </Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <Link to="/auctions" className="hover:text-emerald-600 transition-colors">
-          Auksionlar bozori
+        <Link to="/dashboard" className="hover:text-emerald-600 transition-colors">
+          Auksionlar
         </Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="font-semibold text-slate-900 dark:text-slate-100 truncate max-w-xs sm:max-w-md">

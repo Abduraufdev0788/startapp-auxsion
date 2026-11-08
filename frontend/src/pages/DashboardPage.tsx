@@ -100,10 +100,19 @@ export const DashboardPage: React.FC = () => {
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
 
   // In-Dashboard Single Search & Filters
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const initialSearchParam = searchParams.get('search') || '';
+  const initialCatParam = searchParams.get('category') || 'all';
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearchParam);
+  const [filterCategory, setFilterCategory] = useState<string>(initialCatParam);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
+
+  useEffect(() => {
+    const s = searchParams.get('search');
+    const c = searchParams.get('category');
+    if (s !== null) setSearchQuery(s);
+    if (c !== null) setFilterCategory(c);
+  }, [searchParams]);
 
   // OLX-Style Selling Modal State
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -1005,16 +1014,11 @@ export const DashboardPage: React.FC = () => {
                         Filtrlarni tozalash
                       </Button>
                     ) : (
-                      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <div className="flex items-center justify-center">
                         <Button onClick={() => handleSectionChange('market')}>
                           <Gavel className="w-4 h-4 mr-1.5" />
                           Bozordagi lotlarni ko'rish
                         </Button>
-                        <Link to="/auctions">
-                          <Button variant="outline">
-                            Auksionlar bozoriga o'tish
-                          </Button>
-                        </Link>
                       </div>
                     )}
                   </div>

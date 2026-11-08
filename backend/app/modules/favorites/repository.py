@@ -55,3 +55,4 @@ class FavoriteRepository:
         stmt = select(FavoriteModel.auction_id).where(FavoriteModel.user_id == user_id)
         res = await self.db.execute(stmt)
         return list(res.scalars().all())
+

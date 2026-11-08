@@ -68,3 +68,4 @@ async def get_favorite_ids(
 ):
     service = FavoriteService(db)
     return await service.get_favorite_auction_ids(current_user.id)
+

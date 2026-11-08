@@ -44,3 +44,4 @@ class FavoriteService:
     async def get_favorite_auction_ids(self, user_id: uuid.UUID) -> List[str]:
         ids = await self.repository.get_user_favorite_auction_ids(user_id)
         return [str(i) for i in ids]
+

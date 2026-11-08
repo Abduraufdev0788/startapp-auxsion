@@ -148,7 +148,7 @@ export const HowItWorksPage: React.FC = () => {
           Bugunoq ro'yxatdan o'ting, kafolatlangan auksionlarda qatnashing va orzungizdagi tovarlarni eng maqbul narxlarda yutib oling.
         </p>
         <div className="pt-2 flex justify-center gap-3">
-          <Link to="/auctions">
+          <Link to="/dashboard">
             <Button size="md" className="bg-white text-emerald-800 hover:bg-emerald-50 font-bold">
               Auksionlarni ko'rish
             </Button>

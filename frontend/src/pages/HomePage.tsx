@@ -7,27 +7,19 @@ import {
   ArrowRight,
   Sparkles,
   Search,
-  TrendingUp,
-  Cpu,
-  Car,
-  Building,
-  Palette,
-  Watch,
-  Tv,
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { formatUZS } from '../utils/formatters';
 import { useAuth } from '../app/providers';
-import { auctionsService, categoriesService, getMediaUrl } from '../services/api';
-import { Auction, Category } from '../types';
+import { auctionsService, getMediaUrl } from '../services/api';
+import { Auction } from '../types';
 
 export const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [homeSearch, setHomeSearch] = useState('');
   const [activeAuctions, setActiveAuctions] = useState<Auction[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
 
   // Fallback featured items
@@ -64,15 +56,6 @@ export const HomePage: React.FC = () => {
     },
   ];
 
-  const popularCategoryIcons = [
-    { name: 'Elektronika', icon: Cpu, slug: 'electronics' },
-    { name: 'Avtomobillar', icon: Car, slug: 'auto' },
-    { name: "Ko'chmas mulk", icon: Building, slug: 'realty' },
-    { name: "San'at", icon: Palette, slug: 'art' },
-    { name: 'Brend soatlar', icon: Watch, slug: 'watches' },
-    { name: 'Maishiy texnika', icon: Tv, slug: 'appliances' },
-  ];
-
   useEffect(() => {
     // Load live auctions
     auctionsService
@@ -81,14 +64,6 @@ export const HomePage: React.FC = () => {
         if (res.items && res.items.length > 0) {
           setActiveAuctions(res.items.slice(0, 6));
         }
-      })
-      .catch(() => {});
-
-    // Load categories
-    categoriesService
-      .list()
-      .then((cats) => {
-        if (cats && cats.length > 0) setCategories(cats);
       })
       .catch(() => {});
   }, []);
@@ -119,9 +94,9 @@ export const HomePage: React.FC = () => {
             onSubmit={(e) => {
               e.preventDefault();
               if (homeSearch.trim()) {
-                navigate(`/auctions?search=${encodeURIComponent(homeSearch.trim())}`);
+                navigate(`/dashboard?search=${encodeURIComponent(homeSearch.trim())}`);
               } else {
-                navigate('/auctions');
+                navigate('/dashboard');
               }
             }}
             className="mt-8 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800 p-2"
@@ -143,7 +118,7 @@ export const HomePage: React.FC = () => {
 
           {/* Main Action Buttons */}
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/auctions">
+            <Link to="/dashboard">
               <Button size="lg" className="w-full sm:w-auto shadow-lg shadow-emerald-500/25 font-bold">
                 <Gavel className="w-5 h-5 mr-2" />
                 Auksionlarni ko'rish
@@ -194,7 +169,7 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
           <Link
-            to="/auctions"
+            to="/dashboard"
             className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center transition-colors"
           >
             Hammasini ko'rish <ArrowRight className="w-4 h-4 ml-1" />
@@ -315,68 +290,6 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Popular Categories Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Ommabop toifalar
-              </h2>
-            </div>
-            <p className="text-sm text-slate-500 mt-1">
-              Eng talabgir mahsulot toifalari bo'yicha saralangan savdolar
-            </p>
-          </div>
-          <Link
-            to="/categories"
-            className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center transition-colors"
-          >
-            Barcha toifalar <ArrowRight className="w-4 h-4 ml-1" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.length > 0
-            ? categories.slice(0, 6).map((cat) => (
-                <Link
-                  key={cat.id}
-                  to={`/auctions?category=${cat.id}`}
-                  className="group block"
-                >
-                  <Card className="p-4 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Cpu className="w-6 h-6" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-emerald-600">
-                      {cat.name}
-                    </span>
-                  </Card>
-                </Link>
-              ))
-            : popularCategoryIcons.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.slug}
-                    to={`/auctions?category=${item.slug}`}
-                    className="group block"
-                  >
-                    <Card className="p-4 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-3">
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-emerald-600">
-                        {item.name}
-                      </span>
-                    </Card>
-                  </Link>
-                );
-              })}
-        </div>
-      </section>
-
       {/* How it works */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-slate-100/60 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800">
         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -407,7 +320,7 @@ export const HomePage: React.FC = () => {
             </div>
           </Link>
 
-          <Link to="/auctions" className="group block">
+          <Link to="/dashboard" className="group block">
             <div className="text-center p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-emerald-500/50 transition-all h-full flex flex-col justify-between">
               <div>
                 <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-xl mb-4 group-hover:scale-110 transition-transform">

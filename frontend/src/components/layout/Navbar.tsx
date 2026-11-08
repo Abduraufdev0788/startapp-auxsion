@@ -35,9 +35,9 @@ export const Navbar: React.FC = () => {
   const handleNavSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (navSearch.trim()) {
-      navigate(`/auctions?search=${encodeURIComponent(navSearch.trim())}`);
+      navigate(`/dashboard?search=${encodeURIComponent(navSearch.trim())}`);
     } else {
-      navigate('/auctions');
+      navigate('/dashboard');
     }
   };
 
@@ -83,18 +83,6 @@ export const Navbar: React.FC = () => {
 
         {/* Actions */}
         <div className="flex items-center space-x-3">
-          <Link to="/auctions">
-            <Button variant="secondary" size="sm">
-              Auksionlar
-            </Button>
-          </Link>
-
-          <Link to="/categories">
-            <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-              Toifalar
-            </Button>
-          </Link>
-
           {isAuthenticated && user ? (
             <div className="flex items-center space-x-2">
               {isAdmin && (

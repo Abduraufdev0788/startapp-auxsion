@@ -18,3 +18,4 @@ class FavoriteItemResponse(BaseModel):
     auction: Optional[AuctionResponse] = None
 
     model_config = ConfigDict(from_attributes=True)
+

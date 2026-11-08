@@ -24,9 +24,8 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="font-semibold text-sm mb-4">Bo'limlar</h4>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li><Link to="/auctions" className="hover:text-emerald-600">Barcha Auksionlar</Link></li>
+              <li><Link to="/dashboard" className="hover:text-emerald-600">Auksionlar va Savdolar</Link></li>
               <li><Link to="/how-it-works" className="hover:text-emerald-600">Qanday ishlaydi?</Link></li>
-              <li><Link to="/categories" className="hover:text-emerald-600">Kategoriyalar</Link></li>
             </ul>
           </div>
 
