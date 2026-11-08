@@ -13,6 +13,7 @@ import {
   Film,
   Play,
   ChevronRight,
+  CreditCard,
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -24,6 +25,7 @@ import {
   auctionsService,
   biddingService,
   participantsService,
+  paymentsService,
   getMediaUrl,
   isVideoMedia,
 } from '../services/api';
@@ -43,7 +45,26 @@ export const AuctionDetailsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmittingBid, setIsSubmittingBid] = useState<boolean>(false);
   const [isPayingDeposit, setIsPayingDeposit] = useState<boolean>(false);
+  const [isSettling, setIsSettling] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const handleSettleWinner = async () => {
+    if (!auction) return;
+    const remaining = auction.current_highest_bid - auction.deposit_amount;
+    if (!window.confirm(`Lot bo'yicha qolgan ${formatUZS(remaining)} summani platformadagi balansingizdan to'lashni tasdiqlaysizmi?`)) {
+      return;
+    }
+
+    setIsSettling(true);
+    try {
+      const res = await paymentsService.settleWinnerPayment(auction.id);
+      setFeedback({ type: 'success', message: res.message || "To'lov muvaffaqiyatli yakunlandi!" });
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.response?.data?.detail || "To'lovda xatolik yuz berdi. Balansingizni tekshiring." });
+    } finally {
+      setIsSettling(false);
+    }
+  };
   const [activeMediaIndex, setActiveMediaIndex] = useState<number>(0);
 
   // Fallback demo auction data if requested auction not yet in DB
@@ -515,7 +536,49 @@ export const AuctionDetailsPage: React.FC = () => {
             </div>
 
             {/* Eligibility & Bid Section */}
-            {isOwner ? (
+            {current.status === 'COMPLETED' ? (
+              <div className="space-y-4 p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center space-x-2 text-sm font-bold text-slate-800 dark:text-slate-100">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <span>Auksion savdolari yakunlangan</span>
+                </div>
+                {current.highest_bidder_id === user?.id ? (
+                  <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <p className="text-xs text-emerald-600 font-bold">
+                      Tabriklaymiz! Ushbu lot bo'yicha siz g'olib bo'ldingiz!
+                    </p>
+                    <div className="p-3 bg-white dark:bg-slate-900 rounded-xl text-xs space-y-1">
+                      <div className="flex justify-between text-slate-500">
+                        <span>G'oliblik narxi:</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-100">{formatUZS(current.current_highest_bid)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-500">
+                        <span>Kafolat depozitidan:</span>
+                        <span className="text-emerald-600 font-semibold">-{formatUZS(current.deposit_amount)}</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-slate-900 dark:text-slate-100 pt-1 border-t border-slate-100 dark:border-slate-800">
+                        <span>Qolgan to'lov summasi:</span>
+                        <span className="text-amber-600 font-extrabold">{formatUZS(current.current_highest_bid - current.deposit_amount)}</span>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleSettleWinner}
+                      isLoading={isSettling}
+                      className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5"
+                    >
+                      <CreditCard className="w-4 h-4 mr-1.5" />
+                      Qolgan to'lovni balansingizdan to'lash
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    {isAuthenticated
+                      ? "Ushbu lot yakunlandi. Agar depozit to'lagan bo'lsangiz, u to'liq balansingizga qaytarilgan."
+                      : "Ushbu auksion yakunlangan."}
+                  </p>
+                )}
+              </div>
+            ) : isOwner ? (
               <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
                 <span>Bu sizning shaxsiy auksioningiz.</span>

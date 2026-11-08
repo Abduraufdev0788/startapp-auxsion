@@ -127,6 +127,24 @@ export const DashboardPage: React.FC = () => {
   const [walletTransactions, setWalletTransactions] = useState<WalletTransaction[]>([]);
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState<boolean>(false);
   const [financeSubTab, setFinanceSubTab] = useState<'transactions' | 'withdrawals' | 'deposits'>('transactions');
+  const [settlingAuctionId, setSettlingAuctionId] = useState<string | null>(null);
+
+  const handleSettleWinner = async (auc: Auction) => {
+    const remainingTiyin = (auc.current_highest_bid || 0) - (auc.deposit_amount || 0);
+    const confirmMsg = `Lot "${auc.product?.title || auc.id}" bo'yicha kafolat depozitingiz hisobga olingan holda qolgan to'lov summasi: ${formatUZS(remainingTiyin)}. To'lovni platformadagi ichki balansingizdan amalga oshirishni tasdiqlaysizmi?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setSettlingAuctionId(auc.id);
+    try {
+      const res = await paymentsService.settleWinnerPayment(auc.id);
+      alert(res.message || "To'lov muvaffaqiyatli yakunlandi!");
+      loadUserData();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "To'lovni amalga oshirishda xatolik yuz berdi. Balansingizni tekshiring.");
+    } finally {
+      setSettlingAuctionId(null);
+    }
+  };
 
   // In-Dashboard Single Search & Filters
   const initialSearchParam = searchParams.get('search') || '';
@@ -1197,7 +1215,19 @@ export const DashboardPage: React.FC = () => {
                         </div>
 
                         {/* Card Action Link */}
-                        <div className="p-4 pt-0">
+                        <div className="p-4 pt-0 space-y-2">
+                          {activeSection === 'won' && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              isLoading={settlingAuctionId === auc.id}
+                              onClick={() => handleSettleWinner(auc)}
+                              className="w-full text-xs font-bold justify-center bg-amber-600 hover:bg-amber-700 text-white"
+                            >
+                              <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+                              Yakuniy to'lovni tasdiqlash
+                            </Button>
+                          )}
                           <Link to={`/auctions/${auc.id}`}>
                             <Button variant="outline" size="sm" className="w-full text-xs font-semibold justify-center">
                               <Eye className="w-3.5 h-3.5 mr-1.5" />

@@ -364,3 +364,23 @@ class PaymentService:
                 )
             )
         return items
+
+    async def list_all_withdrawals(
+        self, limit: int = 50, offset: int = 0
+    ) -> List[WithdrawalResponse]:
+        items = await self.repo.list_all_withdrawals(limit=limit, offset=offset)
+        return [
+            WithdrawalResponse(
+                id=w.id,
+                amount_tiyin=w.amount,
+                amount_uzs=w.amount // 100,
+                formatted_amount=format_uzs(w.amount),
+                card_number_masked=w.card_number,
+                card_holder=w.card_holder,
+                card_type=w.card_type,
+                status=w.status,
+                provider_ref=w.provider_ref,
+                created_at=w.created_at,
+            )
+            for w in items
+        ]

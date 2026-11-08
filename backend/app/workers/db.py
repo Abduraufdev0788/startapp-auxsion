@@ -32,3 +32,4 @@ async def get_worker_db() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await session.close()
             await engine.dispose()
+

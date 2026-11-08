@@ -229,6 +229,16 @@ export const paymentsService = {
     const res = await apiClient.get<WalletTransaction[]>('/payments/wallet/transactions');
     return res.data;
   },
+
+  async settleWinnerPayment(auctionId: string): Promise<{
+    message: string;
+    settled_amount: number;
+    formatted_settled_amount: string;
+    status: string;
+  }> {
+    const res = await apiClient.post('/payments/winner-settle', { auction_id: auctionId });
+    return res.data;
+  },
 };
 
 export const notificationsService = {
@@ -387,15 +397,22 @@ export const adminService = {
 
   async moderateAuction(auctionId: string, approved: boolean, moderationNotes?: string): Promise<any> {
     const res = await apiClient.post(`/admin/auctions/${auctionId}/moderate`, {
-      approved,
-      moderation_notes: moderationNotes,
+      decision: approved ? 'APPROVED' : 'REJECTED',
+      reason: moderationNotes,
     });
     return res.data;
   },
 
-  async updateUserStatus(userId: string, status: string, reason?: string): Promise<any> {
+  async listWithdrawals(limit = 50, offset = 0): Promise<Withdrawal[]> {
+    const res = await apiClient.get<Withdrawal[]>('/admin/withdrawals', {
+      params: { limit, offset },
+    });
+    return res.data;
+  },
+
+  async updateUserStatus(userId: string, is_active: boolean, reason?: string): Promise<any> {
     const res = await apiClient.patch(`/admin/users/${userId}/status`, {
-      status,
+      is_active,
       reason,
     });
     return res.data;

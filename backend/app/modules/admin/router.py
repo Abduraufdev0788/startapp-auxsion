@@ -18,6 +18,8 @@ from app.modules.disputes.schemas import DisputeResolveRequest, DisputeResponse
 from app.modules.disputes.service import DisputeService
 from app.modules.users.models import UserModel
 from app.modules.users.schemas import UserResponse
+from app.modules.payments.schemas import WithdrawalResponse
+from app.modules.payments.service import PaymentService
 
 router = APIRouter(
     prefix="/admin",
@@ -104,3 +106,18 @@ async def list_audit_logs(
 ):
     service = AdminService(db)
     return await service.list_audit_logs(limit, offset)
+
+
+@router.get(
+    "/withdrawals",
+    response_model=List[WithdrawalResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Barcha foydalanuvchilarning pul yechish so'rovlari",
+)
+async def list_all_withdrawals(
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+):
+    payment_service = PaymentService(db)
+    return await payment_service.list_all_withdrawals(limit=limit, offset=offset)

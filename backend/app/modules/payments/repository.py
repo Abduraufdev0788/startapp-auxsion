@@ -114,3 +114,13 @@ class PaymentRepository:
         )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
+
+    async def list_all_withdrawals(self, limit: int = 50, offset: int = 0) -> List[WithdrawalRequestModel]:
+        stmt = (
+            select(WithdrawalRequestModel)
+            .order_by(WithdrawalRequestModel.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
