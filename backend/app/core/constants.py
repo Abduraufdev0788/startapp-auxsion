@@ -1,0 +1,78 @@
+from enum import StrEnum
+
+
+class UserRole(StrEnum):
+    GUEST = "GUEST"
+    USER = "USER"
+    SELLER = "SELLER"
+    ADMIN = "ADMIN"
+    SUPER_ADMIN = "SUPER_ADMIN"
+
+
+class AuctionStatus(StrEnum):
+    DRAFT = "DRAFT"
+    PENDING_MODERATION = "PENDING_MODERATION"
+    SCHEDULED = "SCHEDULED"
+    ACTIVE = "ACTIVE"
+    FINALIZING = "FINALIZING"
+    COMPLETED = "COMPLETED"
+    NO_WINNER = "NO_WINNER"
+    CANCELLED = "CANCELLED"
+    DISPUTED = "DISPUTED"
+
+
+class DepositStatus(StrEnum):
+    PENDING = "PENDING"
+    PAID = "PAID"
+    LOCKED = "LOCKED"
+    REFUND_PENDING = "REFUND_PENDING"
+    REFUNDED = "REFUNDED"
+    APPLIED_TO_PURCHASE = "APPLIED_TO_PURCHASE"
+    FORFEITED = "FORFEITED"
+    FAILED = "FAILED"
+
+
+class RefundStatus(StrEnum):
+    REQUESTED = "REQUESTED"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class PaymentType(StrEnum):
+    DEPOSIT = "DEPOSIT"
+    WINNER_PAYMENT = "WINNER_PAYMENT"
+    REFUND = "REFUND"
+    SELLER_PAYOUT = "SELLER_PAYOUT"
+
+
+class PaymentStatus(StrEnum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class ParticipantStatus(StrEnum):
+    ELIGIBLE = "ELIGIBLE"
+    BLOCKED = "BLOCKED"
+    DISQUALIFIED = "DISQUALIFIED"
+
+
+class DisputeStatus(StrEnum):
+    OPEN = "OPEN"
+    UNDER_REVIEW = "UNDER_REVIEW"
+    RESOLVED_BUYER_FAVOR = "RESOLVED_BUYER_FAVOR"
+    RESOLVED_SELLER_FAVOR = "RESOLVED_SELLER_FAVOR"
+    CLOSED = "CLOSED"
+
+
+class Currency(StrEnum):
+    UZS = "UZS"
+
+
+# Monetary standard: 1 UZS = 100 tiyin (minor unit integer)
+UZS_MINOR_UNIT_MULTIPLIER = 100
+
