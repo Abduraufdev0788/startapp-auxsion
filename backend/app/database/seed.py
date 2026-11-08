@@ -7,7 +7,7 @@ from app.database.session import AsyncSessionLocal, engine
 from app.database.base import Base
 from app.core.security import get_password_hash
 from app.core.constants import UserRole, AuctionStatus, DepositStatus
-from app.modules.auth.models import RoleModel
+from app.modules.auth.models import RoleModel, UserRoleModel
 from app.modules.users.models import UserModel, UserProfileModel
 from app.modules.categories.models import CategoryModel
 from app.modules.products.models import ProductModel, ProductImageModel
@@ -42,14 +42,15 @@ async def seed_database():
             admin = UserModel(
                 phone=admin_phone,
                 email="admin@auctionhub.uz",
-                password_hash=get_password_hash("Admin123!Secure"),
+                hashed_password=get_password_hash("Admin123!Secure"),
                 is_active=True,
                 is_verified=True,
             )
             db.add(admin)
             await db.flush()
             admin_roles = (await db.execute(select(RoleModel).where(RoleModel.name.in_(["ADMIN", "SUPER_ADMIN"])))).scalars().all()
-            admin.roles.extend(admin_roles)
+            for ar in admin_roles:
+                db.add(UserRoleModel(user_id=admin.id, role_id=ar.id))
             db.add(UserProfileModel(user_id=admin.id, full_name="Super Administrator"))
             logger.info("Admin user created (+998900000001 / Admin123!Secure)")
 
@@ -60,14 +61,14 @@ async def seed_database():
             seller = UserModel(
                 phone=seller_phone,
                 email="istore@auctionhub.uz",
-                password_hash=get_password_hash("Seller123!Secure"),
+                hashed_password=get_password_hash("Seller123!Secure"),
                 is_active=True,
                 is_verified=True,
             )
             db.add(seller)
             await db.flush()
             seller_role = (await db.execute(select(RoleModel).where(RoleModel.name == "SELLER"))).scalar_one()
-            seller.roles.append(seller_role)
+            db.add(UserRoleModel(user_id=seller.id, role_id=seller_role.id))
             db.add(UserProfileModel(user_id=seller.id, full_name="iStore Official (MChJ)"))
             logger.info("Seller user created (+998901234567 / Seller123!Secure)")
 
@@ -78,14 +79,14 @@ async def seed_database():
             buyer = UserModel(
                 phone=buyer_phone,
                 email="anvar@auctionhub.uz",
-                password_hash=get_password_hash("Buyer123!Secure"),
+                hashed_password=get_password_hash("Buyer123!Secure"),
                 is_active=True,
                 is_verified=True,
             )
             db.add(buyer)
             await db.flush()
             user_role = (await db.execute(select(RoleModel).where(RoleModel.name == "USER"))).scalar_one()
-            buyer.roles.append(user_role)
+            db.add(UserRoleModel(user_id=buyer.id, role_id=user_role.id))
             db.add(UserProfileModel(user_id=buyer.id, full_name="Anvar Karimov"))
             logger.info("Buyer user created (+998909876543 / Buyer123!Secure)")
 
