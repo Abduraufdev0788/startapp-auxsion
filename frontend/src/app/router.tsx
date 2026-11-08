@@ -6,6 +6,7 @@ import { AuctionDetailsPage } from '../pages/AuctionDetailsPage';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { DashboardPage } from '../pages/DashboardPage';
+import { CategoriesPage } from '../pages/CategoriesPage';
 import { AdminPage } from '../pages/AdminPage';
 import { HowItWorksPage } from '../pages/HowItWorksPage';
 import { TermsPage } from '../pages/TermsPage';
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'auctions', element: <AuctionsPage /> },
       { path: 'auctions/:id', element: <AuctionDetailsPage /> },
+      { path: 'categories', element: <CategoriesPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },

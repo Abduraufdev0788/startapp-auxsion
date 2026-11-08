@@ -229,6 +229,17 @@ export const categoriesService = {
     const res = await apiClient.get<Category[]>('/categories');
     return res.data;
   },
+
+  async create(data: { name: string; description?: string; icon?: string; slug?: string }): Promise<Category> {
+    // Try custom/user endpoint first, falls back if needed
+    try {
+      const res = await apiClient.post<Category>('/categories/custom', data);
+      return res.data;
+    } catch {
+      const res = await apiClient.post<Category>('/categories', data);
+      return res.data;
+    }
+  },
 };
 
 export const productsService = {
@@ -241,6 +252,75 @@ export const productsService = {
     const res = await apiClient.post<Product>('/products', data);
     return res.data;
   },
+
+  async uploadImage(productId: string, file: File): Promise<{ image_url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.post<{ image_url: string }>(
+      `/products/${productId}/images`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return res.data;
+  },
+
+  async uploadMedia(productId: string, files: File[]): Promise<string[]> {
+    if (!files || files.length === 0) return [];
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+    try {
+      const res = await apiClient.post<{ uploaded_urls: string[]; count: number }>(
+        `/products/${productId}/media`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return res.data.uploaded_urls;
+    } catch {
+      // Fallback to sequential single upload
+      const urls: string[] = [];
+      for (const file of files) {
+        const singleData = new FormData();
+        singleData.append('file', file);
+        const res = await apiClient.post<{ image_url: string }>(
+          `/products/${productId}/images`,
+          singleData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+        urls.push(res.data.image_url);
+      }
+      return urls;
+    }
+  },
+};
+
+export const getMediaUrl = (url?: string): string => {
+  if (!url) {
+    return 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1000&auto=format&fit=crop&q=80';
+  }
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  return `${backendUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
+export const isVideoMedia = (url?: string): boolean => {
+  if (!url) return false;
+  return /\.(mp4|webm|ogg|mov|avi|mkv)(\?.*)?$/i.test(url);
 };
 
 export const adminService = {

@@ -5,9 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import UserRole
 from app.database.session import get_db
-from app.modules.auth.dependencies import require_roles
+from app.modules.auth.dependencies import get_current_active_user, require_roles
 from app.modules.categories.schemas import CategoryCreateRequest, CategoryResponse
 from app.modules.categories.service import CategoryService
+from app.modules.users.models import UserModel
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
@@ -46,6 +47,21 @@ async def get_category(
 )
 async def create_category(
     data: CategoryCreateRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    service = CategoryService(db)
+    return await service.create_category(data)
+
+
+@router.post(
+    "/custom",
+    response_model=CategoryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Yangi toifa qo'shish (Foydalanuvchi/Sotuvchi)",
+)
+async def create_custom_category(
+    data: CategoryCreateRequest,
+    current_user: UserModel = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     service = CategoryService(db)

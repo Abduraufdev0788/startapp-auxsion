@@ -63,7 +63,14 @@ class AuctionService:
             )
 
         # Auction duration validation (between 1 hour and 30 days)
-        duration = data.end_time - data.start_time
+        start_time = data.start_time
+        end_time = data.end_time
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+        if end_time.tzinfo is None:
+            end_time = end_time.replace(tzinfo=timezone.utc)
+
+        duration = end_time - start_time
         min_duration = timedelta(hours=settings.MIN_AUCTION_DURATION_HOURS)
         max_duration = timedelta(days=settings.MAX_AUCTION_DURATION_DAYS)
 
@@ -78,7 +85,8 @@ class AuctionService:
                 error_code="AUCTION_TOO_LONG",
             )
 
-        auction = await self.repo.create(seller_id, data)
+        data_to_create = data.model_copy(update={"start_time": start_time, "end_time": end_time})
+        auction = await self.repo.create(seller_id, data_to_create)
         await self.repo.record_event(
             auction_id=auction.id,
             event_type="auction.created",

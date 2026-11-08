@@ -1,3 +1,4 @@
+import os
 import uuid
 from typing import List
 from fastapi import UploadFile
@@ -9,6 +10,11 @@ from app.modules.categories.repository import CategoryRepository
 from app.modules.products.models import ProductModel
 from app.modules.products.repository import ProductRepository
 from app.modules.products.schemas import ProductCreateRequest, ProductUpdateRequest
+
+ALLOWED_MEDIA_EXTENSIONS = {
+    ".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif",
+    ".mp4", ".webm", ".ogg", ".mov", ".avi", ".mkv",
+}
 
 
 class ProductService:
@@ -51,22 +57,59 @@ class ProductService:
         await self.db.commit()
         return updated
 
+    def _validate_media_file(self, file: UploadFile) -> None:
+        ext = os.path.splitext(file.filename or "")[1].lower()
+        content_type = (file.content_type or "").lower()
+        is_valid = (
+            content_type.startswith("image/")
+            or content_type.startswith("video/")
+            or ext in ALLOWED_MEDIA_EXTENSIONS
+        )
+        if not is_valid:
+            raise BadRequestException(
+                "Faqat rasm (JPG, PNG, WebP, GIF) yoki video (MP4, WebM, MOV) formatlari qabul qilinadi",
+                error_code="INVALID_MEDIA_FORMAT",
+            )
+
     async def upload_product_image(
         self, product_id: uuid.UUID, user_id: uuid.UUID, file: UploadFile
     ) -> str:
         product = await self.get_product(product_id)
         if product.seller_id != user_id:
-            raise ForbiddenException("Faqat mahsulot egasi rasm yuklashi mumkin", error_code="NOT_PRODUCT_OWNER")
+            raise ForbiddenException("Faqat mahsulot egasi media yuklashi mumkin", error_code="NOT_PRODUCT_OWNER")
 
-        # Validate content type
-        if file.content_type not in ["image/jpeg", "image/png", "image/webp"]:
-            raise BadRequestException(
-                "Faqat JPG, PNG yoki WebP formatidagi rasmlar qabul qilinadi",
-                error_code="INVALID_IMAGE_FORMAT",
-            )
+        self._validate_media_file(file)
 
         file_url = await save_uploaded_file(file, folder="products")
         is_first = len(product.images) == 0
-        await self.repo.add_image(product_id, file_url, is_primary=is_first)
+        await self.repo.add_image(product_id, file_url, is_primary=is_first, display_order=len(product.images))
         await self.db.commit()
         return file_url
+
+    async def upload_product_media(
+        self, product_id: uuid.UUID, user_id: uuid.UUID, files: List[UploadFile]
+    ) -> List[str]:
+        product = await self.get_product(product_id)
+        if product.seller_id != user_id:
+            raise ForbiddenException("Faqat mahsulot egasi media yuklashi mumkin", error_code="NOT_PRODUCT_OWNER")
+
+        if not files:
+            raise BadRequestException("Kamida bitta fayl tanlanishi lozim", error_code="NO_FILES_PROVIDED")
+
+        uploaded_urls: List[str] = []
+        current_count = len(product.images)
+
+        for idx, file in enumerate(files):
+            self._validate_media_file(file)
+            file_url = await save_uploaded_file(file, folder="products")
+            is_primary = (current_count == 0 and idx == 0)
+            await self.repo.add_image(
+                product_id,
+                file_url,
+                is_primary=is_primary,
+                display_order=current_count + idx,
+            )
+            uploaded_urls.append(file_url)
+
+        await self.db.commit()
+        return uploaded_urls

@@ -62,13 +62,13 @@ class ProductRepository:
         return product
 
     async def add_image(
-        self, product_id: uuid.UUID, image_url: str, is_primary: bool = False
+        self, product_id: uuid.UUID, image_url: str, is_primary: bool = False, display_order: int = 0
     ) -> ProductImageModel:
         image = ProductImageModel(
             product_id=product_id,
             image_url=image_url,
             is_primary=is_primary,
-            display_order=0,
+            display_order=display_order,
         )
         self.db.add(image)
         await self.db.flush()

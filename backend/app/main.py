@@ -68,8 +68,8 @@ async def auctionhub_exception_handler(request: Request, exc: AuctionHubExceptio
 
 
 # Mount local media directory for uploads
-if os.path.exists(settings.LOCAL_STORAGE_PATH):
-    app.mount("/media", StaticFiles(directory=settings.LOCAL_STORAGE_PATH), name="media")
+os.makedirs(settings.LOCAL_STORAGE_PATH, exist_ok=True)
+app.mount("/media", StaticFiles(directory=settings.LOCAL_STORAGE_PATH), name="media")
 
 # Include Routers
 app.include_router(ws_router, prefix=settings.API_V1_STR, tags=["Real-time WebSocket"])

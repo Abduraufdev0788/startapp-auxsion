@@ -36,6 +36,12 @@ class CategoryRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_by_name(self, name: str) -> Optional[CategoryModel]:
+        from sqlalchemy import func
+        stmt = select(CategoryModel).where(func.lower(CategoryModel.name) == name.strip().lower())
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def create(self, data: CategoryCreateRequest) -> CategoryModel:
         category = CategoryModel(
             name=data.name,

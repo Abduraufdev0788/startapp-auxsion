@@ -15,6 +15,11 @@ import {
   ShieldCheck,
   CheckCircle2,
   ExternalLink,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  UploadCloud,
+  Trash2,
+  FolderPlus,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -27,6 +32,7 @@ import {
   categoriesService,
   productsService,
   auctionsService,
+  getMediaUrl,
 } from '../services/api';
 import { Deposit, Notification, Category, Auction } from '../types';
 
@@ -52,7 +58,19 @@ export const DashboardPage: React.FC = () => {
   // Create Auction Modal State
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitStep, setSubmitStep] = useState<string>('');
   const [modalFeedback, setModalFeedback] = useState<string | null>(null);
+
+  // Media files (photos & videos)
+  const [mediaItems, setMediaItems] = useState<
+    { file: File; previewUrl: string; isVideo: boolean }[]
+  >([]);
+
+  // Category management inside modal
+  const [showNewCatInput, setShowNewCatInput] = useState<boolean>(false);
+  const [newCatName, setNewCatName] = useState<string>('');
+  const [newCatDesc, setNewCatDesc] = useState<string>('');
+  const [isCreatingCat, setIsCreatingCat] = useState<boolean>(false);
 
   // New Auction Form fields
   const [title, setTitle] = useState('');
@@ -130,46 +148,156 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
+  const handleMediaFilesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      const newItems = files.map((file) => ({
+        file,
+        previewUrl: URL.createObjectURL(file),
+        isVideo:
+          file.type.startsWith('video/') ||
+          /\.(mp4|webm|mov|ogg|avi|mkv)$/i.test(file.name),
+      }));
+      setMediaItems((prev) => [...prev, ...newItems]);
+    }
+  };
+
+  const handleRemoveMediaItem = (idx: number) => {
+    setMediaItems((prev) => {
+      const target = prev[idx];
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const handleQuickAddCategory = async () => {
+    if (!newCatName.trim()) return;
+    setIsCreatingCat(true);
+    setModalFeedback(null);
+    try {
+      const created = await categoriesService.create({
+        name: newCatName.trim(),
+        description: newCatDesc.trim() || undefined,
+        icon: 'Package',
+      });
+      setCategories((prev) => [created, ...prev.filter((c) => c.id !== created.id)]);
+      setCategoryId(created.id);
+      setNewCatName('');
+      setNewCatDesc('');
+      setShowNewCatInput(false);
+    } catch (err: any) {
+      const raw = err.response?.data?.detail;
+      const msg =
+        typeof raw === 'string'
+          ? raw
+          : Array.isArray(raw)
+          ? raw.map((d: any) => d.msg).join(', ')
+          : "Toifa qo'shishda xatolik yuz berdi.";
+      setModalFeedback(msg);
+    } finally {
+      setIsCreatingCat(false);
+    }
+  };
+
   const handleCreateAuction = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalFeedback(null);
+
+    // Validation
+    if (!title.trim() || title.trim().length < 3) {
+      setModalFeedback("Mahsulot nomi kamida 3 ta belgidan iborat bo'lishi shart.");
+      return;
+    }
+    if (!description.trim() || description.trim().length < 10) {
+      setModalFeedback("Mahsulot tavsifi kamida 10 ta belgidan iborat bo'lishi shart.");
+      return;
+    }
+
+    const catIdToUse = categoryId || categories[0]?.id;
+    if (!catIdToUse) {
+      setModalFeedback("Iltimos, mahsulot toifasini tanlang yoki yangi toifa qo'shing.");
+      return;
+    }
+
+    const startPrice = parseInt(startingPriceUzs, 10);
+    const resPrice = parseInt(reservePriceUzs, 10);
+    const minInc = parseInt(minIncrementUzs, 10);
+    const depAmt = parseInt(depositAmountUzs, 10);
+
+    if (isNaN(startPrice) || startPrice <= 0) {
+      setModalFeedback("Boshlang'ich narx 0 dan katta bo'lishi shart.");
+      return;
+    }
+    if (isNaN(resPrice) || resPrice < startPrice) {
+      setModalFeedback("Minimal sotish narxi boshlang'ich narxdan kam bo'lmasligi shart.");
+      return;
+    }
+    if (isNaN(minInc) || minInc <= 0) {
+      setModalFeedback("Minimal qadam 0 dan katta bo'lishi shart.");
+      return;
+    }
+    if (isNaN(depAmt) || depAmt <= 0) {
+      setModalFeedback("Kafolat depoziti summasi 0 dan katta bo'lishi shart.");
+      return;
+    }
+
     setIsSubmitting(true);
+    setSubmitStep("Mahsulot ma'lumotlari saqlanmoqda...");
 
     try {
       // 1. Create Product
       const product = await productsService.create({
-        title,
-        description,
-        category_id: categoryId || categories[0]?.id,
+        title: title.trim(),
+        description: description.trim(),
+        category_id: catIdToUse,
         condition: 'NEW',
       });
 
-      // 2. Create Auction
+      // 2. Upload Photos and Videos if selected
+      if (mediaItems.length > 0) {
+        setSubmitStep(`Rasmlar va videolar yuklanmoqda (${mediaItems.length} ta)...`);
+        const filesToUpload = mediaItems.map((m) => m.file);
+        await productsService.uploadMedia(product.id, filesToUpload);
+      }
+
+      // 3. Create Auction
+      setSubmitStep("Auksion yaratilmoqda...");
       const startTime = new Date();
       const endTime = new Date(Date.now() + parseInt(durationDays, 10) * 86400000);
 
       const auction = await auctionsService.create({
         product_id: product.id,
-        starting_price_uzs: parseInt(startingPriceUzs, 10),
-        reserve_price_uzs: parseInt(reservePriceUzs, 10),
-        min_bid_increment_uzs: parseInt(minIncrementUzs, 10),
-        deposit_amount_uzs: parseInt(depositAmountUzs, 10),
+        starting_price_uzs: startPrice,
+        reserve_price_uzs: resPrice,
+        min_bid_increment_uzs: minInc,
+        deposit_amount_uzs: depAmt,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
         delivery_info: deliveryInfo,
         rules: "G'olib 48 soat ichida qolgan summani to'lashi shart.",
       });
 
-      // 3. Publish Auction
+      // 4. Publish Auction
+      setSubmitStep("Auksion faollashtirilmoqda...");
       await auctionsService.publish(auction.id);
 
+      // Cleanup previews
+      mediaItems.forEach((m) => URL.revokeObjectURL(m.previewUrl));
+      setMediaItems([]);
       setIsModalOpen(false);
       navigate(`/auctions/${auction.id}`);
     } catch (err: any) {
-      const msg = err.response?.data?.detail || "Auksion yaratishda xatolik yuz berdi.";
+      const raw = err.response?.data?.detail;
+      let msg = "Auksion yaratishda xatolik yuz berdi.";
+      if (typeof raw === 'string') {
+        msg = raw;
+      } else if (Array.isArray(raw)) {
+        msg = raw.map((d: any) => `${d.loc?.slice(-1)[0] || 'Maydon'}: ${d.msg}`).join(', ');
+      }
       setModalFeedback(msg);
     } finally {
       setIsSubmitting(false);
+      setSubmitStep('');
     }
   };
 
@@ -417,10 +545,7 @@ export const DashboardPage: React.FC = () => {
                       <div>
                         <div className="relative aspect-video bg-slate-100 dark:bg-slate-800">
                           <img
-                            src={
-                              auc.product?.images?.[0]?.image_url ||
-                              'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80'
-                            }
+                            src={getMediaUrl(auc.product?.images?.[0]?.image_url)}
                             alt={auc.product?.title || 'Auksion'}
                             className="w-full h-full object-cover"
                           />
@@ -695,7 +820,8 @@ export const DashboardPage: React.FC = () => {
               </div>
             )}
 
-            <form onSubmit={handleCreateAuction} className="space-y-4 text-xs">
+            <form onSubmit={handleCreateAuction} className="space-y-5 text-xs">
+              {/* Product Title */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-slate-700 dark:text-slate-300">
                   Mahsulot nomi *
@@ -710,6 +836,7 @@ export const DashboardPage: React.FC = () => {
                 />
               </div>
 
+              {/* Product Description */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-slate-700 dark:text-slate-300">
                   Mahsulot tavsifi *
@@ -717,29 +844,164 @@ export const DashboardPage: React.FC = () => {
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Mahsulotning to'liq holati, parametrlari, kafolati haqida yozing..."
+                  placeholder="Mahsulotning to'liq holati, parametrlari, kafolati va to'plami haqida batafsil yozing..."
                   rows={3}
                   required
                   className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">
-                    Toifa *
+              {/* Media Uploads (Images & Videos) */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
+                    <ImageIcon className="w-4 h-4 text-emerald-600" />
+                    <span>Rasmlar va videolar</span>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      ({mediaItems.length} ta tanlandi)
+                    </span>
                   </label>
+                  <span className="text-[10px] text-slate-500">
+                    JPG, PNG, WebP, MP4, WebM (ko'pi bilan 50MB)
+                  </span>
+                </div>
+
+                {/* Upload Trigger / Dropzone */}
+                <label className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer bg-slate-50/60 dark:bg-slate-800/40">
+                  <UploadCloud className="w-8 h-8 text-emerald-500 mb-1.5" />
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    Fayllarni tanlash uchun bosing yoki bu yerga sudrab tashlang
+                  </span>
+                  <span className="text-[11px] text-slate-400 mt-0.5">
+                    Mahsulotning aniq fotosuratlari va qisqa video ko'rinishini qo'shishingiz mumkin
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,video/*"
+                    onChange={handleMediaFilesSelect}
+                    className="hidden"
+                  />
+                </label>
+
+                {/* Selected Previews Grid */}
+                {mediaItems.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                    {mediaItems.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 aspect-video flex items-center justify-center"
+                      >
+                        {item.isVideo ? (
+                          <div className="relative w-full h-full flex items-center justify-center bg-slate-900">
+                            <video
+                              src={item.previewUrl}
+                              className="w-full h-full object-cover opacity-80"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-7 h-7 rounded-full bg-emerald-600/90 text-white flex items-center justify-center shadow">
+                                <VideoIcon className="w-4 h-4" />
+                              </div>
+                            </div>
+                            <span className="absolute bottom-1 left-1.5 text-[9px] bg-black/70 text-white px-1.5 py-0.5 rounded font-medium">
+                              Video
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="relative w-full h-full">
+                            <img
+                              src={item.previewUrl}
+                              alt={`preview-${idx}`}
+                              className="w-full h-full object-cover"
+                            />
+                            {idx === 0 && (
+                              <span className="absolute bottom-1 left-1.5 text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-medium">
+                                Asosiy
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Remove file button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMediaItem(idx)}
+                          className="absolute top-1 right-1 p-1 rounded-lg bg-red-600 text-white opacity-90 hover:opacity-100 transition-opacity"
+                          title="Faylni o'chirish"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Category & Duration */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-slate-700 dark:text-slate-300">
+                      Toifa *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewCatInput((prev) => !prev)}
+                      className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center hover:underline"
+                    >
+                      <FolderPlus className="w-3.5 h-3.5 mr-1" />
+                      {showNewCatInput ? "Bekor qilish" : "+ Yangi toifa"}
+                    </button>
+                  </div>
+
                   <select
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
                     className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                   >
+                    {categories.length === 0 && (
+                      <option value="">Toifalar yuklanmoqda...</option>
+                    )}
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
                       </option>
                     ))}
                   </select>
+
+                  {/* Inline New Category Creation Box */}
+                  {showNewCatInput && (
+                    <div className="p-3 mt-2 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 space-y-2">
+                      <div className="font-bold text-[11px] text-emerald-800 dark:text-emerald-300">
+                        Yangi toifa qo'shish
+                      </div>
+                      <input
+                        type="text"
+                        value={newCatName}
+                        onChange={(e) => setNewCatName(e.target.value)}
+                        placeholder="Toifa nomi (masalan: Sport buyumlari)"
+                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900"
+                      />
+                      <input
+                        type="text"
+                        value={newCatDesc}
+                        onChange={(e) => setNewCatDesc(e.target.value)}
+                        placeholder="Tavsifi (ixtiyoriy)"
+                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900"
+                      />
+                      <div className="flex justify-end pt-1">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleQuickAddCategory}
+                          isLoading={isCreatingCat}
+                          className="text-xs py-1"
+                        >
+                          Toifani saqlash va tanlash
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -755,11 +1017,13 @@ export const DashboardPage: React.FC = () => {
                     <option value="3">3 kun</option>
                     <option value="5">5 kun</option>
                     <option value="7">7 kun (1 hafta)</option>
+                    <option value="14">14 kun (2 hafta)</option>
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Price Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="font-semibold text-slate-700 dark:text-slate-300">
                     Boshlang'ich narx (so'm) *
@@ -769,6 +1033,7 @@ export const DashboardPage: React.FC = () => {
                     value={startingPriceUzs}
                     onChange={(e) => setStartingPriceUzs(e.target.value)}
                     required
+                    min={1}
                     className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                   />
                 </div>
@@ -782,12 +1047,16 @@ export const DashboardPage: React.FC = () => {
                     value={reservePriceUzs}
                     onChange={(e) => setReservePriceUzs(e.target.value)}
                     required
+                    min={1}
                     className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                   />
+                  <span className="text-[10px] text-slate-400">
+                    Lot ushbu narxdan pastga sotilmaydi
+                  </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="font-semibold text-slate-700 dark:text-slate-300">
                     Minimal qadam (so'm) *
@@ -797,6 +1066,7 @@ export const DashboardPage: React.FC = () => {
                     value={minIncrementUzs}
                     onChange={(e) => setMinIncrementUzs(e.target.value)}
                     required
+                    min={1}
                     className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                   />
                 </div>
@@ -810,11 +1080,16 @@ export const DashboardPage: React.FC = () => {
                     value={depositAmountUzs}
                     onChange={(e) => setDepositAmountUzs(e.target.value)}
                     required
+                    min={1}
                     className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                   />
+                  <span className="text-[10px] text-slate-400">
+                    Ishtirokchilar to'laydigan qaytariladigan kafolat
+                  </span>
                 </div>
               </div>
 
+              {/* Delivery Info */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-slate-700 dark:text-slate-300">
                   Yetkazib berish ma'lumotlari
@@ -827,17 +1102,30 @@ export const DashboardPage: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Bekor qilish
-                </Button>
-                <Button type="submit" isLoading={isSubmitting}>
-                  Auksionni e'lon qilish
-                </Button>
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div className="text-xs text-slate-500 font-medium">
+                  {submitStep && (
+                    <span className="flex items-center text-emerald-600 animate-pulse">
+                      <Clock className="w-3.5 h-3.5 mr-1" />
+                      {submitStep}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={isSubmitting}
+                  >
+                    Bekor qilish
+                  </Button>
+                  <Button type="submit" isLoading={isSubmitting}>
+                    {submitStep || "Auksionni e'lon qilish"}
+                  </Button>
+                </div>
               </div>
             </form>
           </Card>

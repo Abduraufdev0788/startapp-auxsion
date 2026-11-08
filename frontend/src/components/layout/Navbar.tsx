@@ -82,6 +82,12 @@ export const Navbar: React.FC = () => {
             </Button>
           </Link>
 
+          <Link to="/categories">
+            <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+              Toifalar
+            </Button>
+          </Link>
+
           {isAuthenticated && user ? (
             <div className="flex items-center space-x-2">
               {isAdmin && (

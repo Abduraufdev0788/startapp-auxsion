@@ -10,6 +10,8 @@ import {
   Radio,
   Wifi,
   WifiOff,
+  Film,
+  Play,
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -20,6 +22,8 @@ import {
   auctionsService,
   biddingService,
   participantsService,
+  getMediaUrl,
+  isVideoMedia,
 } from '../services/api';
 import { Auction, Bid, ParticipationStatus } from '../types';
 import { useAuctionWebSocket, BidEventData, AuctionCompletedEventData } from '../hooks/useAuctionWebSocket';
@@ -36,6 +40,7 @@ export const AuctionDetailsPage: React.FC = () => {
   const [isSubmittingBid, setIsSubmittingBid] = useState<boolean>(false);
   const [isPayingDeposit, setIsPayingDeposit] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [activeMediaIndex, setActiveMediaIndex] = useState<number>(0);
 
   // Fallback demo auction data if requested auction not yet in DB
   const fallbackAuction: Auction = {
@@ -299,31 +304,99 @@ export const AuctionDetailsPage: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Image & Details */}
+        {/* Left Column: Media (Images & Videos) & Details */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="relative rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800">
-            <img
-              src={
-                current.product?.images?.[0]?.image_url ||
-                'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1000&auto=format&fit=crop&q=80'
-              }
-              alt={current.product?.title || 'Mahsulot rasmi'}
-              className="w-full h-[420px] object-cover"
-            />
-            <div className="absolute top-4 left-4">
-              <Badge
-                variant="warning"
-                className="bg-amber-500/90 text-white border-none backdrop-blur-md px-3 py-1 text-sm font-bold flex items-center space-x-1.5"
-              >
-                <Clock className="w-4 h-4 mr-1" />
-                <span>
-                  {current.status === 'ACTIVE'
-                    ? `Tugash vaqti: ${new Date(current.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                    : current.status}
-                </span>
-              </Badge>
-            </div>
-          </div>
+          {(() => {
+            const productImages = current.product?.images || [];
+            const activeMedia = productImages[activeMediaIndex] || productImages[0];
+            const activeUrl = activeMedia
+              ? getMediaUrl(activeMedia.image_url)
+              : 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1000&auto=format&fit=crop&q=80';
+            const isVideo = activeMedia ? isVideoMedia(activeMedia.image_url) : false;
+
+            return (
+              <div className="space-y-3">
+                <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md">
+                  {isVideo ? (
+                    <video
+                      key={activeUrl}
+                      src={activeUrl}
+                      controls
+                      autoPlay={false}
+                      className="w-full h-[420px] object-contain bg-black"
+                    />
+                  ) : (
+                    <img
+                      src={activeUrl}
+                      alt={current.product?.title || 'Mahsulot rasmi'}
+                      className="w-full h-[420px] object-cover"
+                    />
+                  )}
+
+                  <div className="absolute top-4 left-4 z-10">
+                    <Badge
+                      variant="warning"
+                      className="bg-amber-500/90 text-white border-none backdrop-blur-md px-3 py-1 text-sm font-bold flex items-center space-x-1.5 shadow"
+                    >
+                      <Clock className="w-4 h-4 mr-1" />
+                      <span>
+                        {current.status === 'ACTIVE'
+                          ? `Tugash vaqti: ${new Date(current.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                          : current.status}
+                      </span>
+                    </Badge>
+                  </div>
+
+                  {isVideo && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <Badge className="bg-indigo-600/90 text-white border-none backdrop-blur-md px-2.5 py-1 text-xs font-semibold flex items-center shadow">
+                        <Film className="w-3.5 h-3.5 mr-1" />
+                        Video ko'rinish
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                {/* Thumbnail Gallery Row */}
+                {productImages.length > 1 && (
+                  <div className="flex items-center space-x-3 overflow-x-auto pb-2 pt-1">
+                    {productImages.map((img, idx) => {
+                      const thumbUrl = getMediaUrl(img.image_url);
+                      const isThumbVideo = isVideoMedia(img.image_url);
+                      const isSelected = idx === activeMediaIndex;
+                      return (
+                        <button
+                          key={img.id || idx}
+                          type="button"
+                          onClick={() => setActiveMediaIndex(idx)}
+                          className={`relative shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${
+                            isSelected
+                              ? 'border-emerald-500 ring-2 ring-emerald-500/30 scale-105'
+                              : 'border-slate-200 dark:border-slate-700 opacity-70 hover:opacity-100'
+                          }`}
+                        >
+                          {isThumbVideo ? (
+                            <div className="w-full h-full bg-slate-900 flex items-center justify-center relative">
+                              <video src={thumbUrl} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                <Play className="w-4 h-4 text-white fill-white" />
+                              </div>
+                            </div>
+                          ) : (
+                            <img
+                              src={thumbUrl}
+                              alt={`thumb-${idx}`}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Description Card */}
           <Card className="p-6 space-y-4">

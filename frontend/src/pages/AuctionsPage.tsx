@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useTransition } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search, Clock, Users, ArrowUpDown, X } from 'lucide-react';
+import { Search, Clock, Users, ArrowUpDown, X, Film } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { formatUZS } from '../utils/formatters';
-import { auctionsService, categoriesService } from '../services/api';
+import { auctionsService, categoriesService, getMediaUrl, isVideoMedia } from '../services/api';
 import { Auction, Category } from '../types';
 
 export const AuctionsPage: React.FC = () => {
@@ -390,15 +390,36 @@ export const AuctionsPage: React.FC = () => {
             <Link key={auction.id} to={`/auctions/${auction.id}`} className="group">
               <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-slate-200 dark:border-slate-800 flex flex-col h-full">
                 {/* Image & Badges */}
-                <div className="relative aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
-                  <img
-                    src={
-                      auction.product?.images?.[0]?.image_url ||
-                      'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80'
+                <div className="relative aspect-video overflow-hidden bg-slate-900">
+                  {(() => {
+                    const rawUrl = auction.product?.images?.[0]?.image_url;
+                    const mediaUrl = getMediaUrl(rawUrl);
+                    const isVideo = isVideoMedia(rawUrl);
+
+                    if (isVideo) {
+                      return (
+                        <div className="relative w-full h-full">
+                          <video
+                            src={mediaUrl}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-0.5 rounded-full flex items-center">
+                              <Film className="w-3 h-3 mr-1 text-emerald-400" /> Video lot
+                            </span>
+                          </div>
+                        </div>
+                      );
                     }
-                    alt={auction.product?.title || 'Mahsulot'}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+
+                    return (
+                      <img
+                        src={mediaUrl}
+                        alt={auction.product?.title || 'Mahsulot'}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    );
+                  })()}
                   <div className="absolute top-3 left-3">
                     <Badge
                       variant="warning"

@@ -78,7 +78,7 @@ async def update_product(
 @router.post(
     "/{product_id}/images",
     status_code=status.HTTP_201_CREATED,
-    summary="Mahsulotga rasm yuklash",
+    summary="Mahsulotga rasm yoki video yuklash",
 )
 async def upload_image(
     product_id: uuid.UUID,
@@ -89,3 +89,19 @@ async def upload_image(
     service = ProductService(db)
     url = await service.upload_product_image(product_id, current_user.id, file)
     return {"image_url": url}
+
+
+@router.post(
+    "/{product_id}/media",
+    status_code=status.HTTP_201_CREATED,
+    summary="Mahsulotga bir nechta rasm va video yuklash",
+)
+async def upload_media(
+    product_id: uuid.UUID,
+    files: List[UploadFile] = File(...),
+    current_user: UserModel = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = ProductService(db)
+    urls = await service.upload_product_media(product_id, current_user.id, files)
+    return {"uploaded_urls": urls, "count": len(urls)}
