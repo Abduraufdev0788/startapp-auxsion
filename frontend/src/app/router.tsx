@@ -6,6 +6,7 @@ import { AuctionDetailsPage } from '../pages/AuctionDetailsPage';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { DashboardPage } from '../pages/DashboardPage';
+import { AdminPage } from '../pages/AdminPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
 export const router = createBrowserRouter([
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
       { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'admin', element: <AdminPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

@@ -4,6 +4,7 @@ import { Gavel, Lock, Phone, User, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { authService } from '../services/api';
+import { useAuth } from '../app/providers';
 
 export const RegisterPage: React.FC = () => {
   const [fullName, setFullName] = useState<string>('');
@@ -12,6 +13,7 @@ export const RegisterPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,11 +21,12 @@ export const RegisterPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await authService.register({
+      const tokens = await authService.register({
         full_name: fullName,
         phone,
         password,
       });
+      await login(tokens);
       navigate('/dashboard');
     } catch (err: any) {
       const msg = err.response?.data?.detail || 'Ro\'yxatdan o\'tishda xatolik yuz berdi. Ma\'lumotlarni tekshiring.';

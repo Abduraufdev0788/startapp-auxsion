@@ -1,9 +1,33 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Gavel, Search, User, PlusCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Gavel, Search, User, PlusCircle, LogOut, Bell, Shield } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useAuth } from '../../app/providers';
+import { notificationsService } from '../../services/api';
 
 export const Navbar: React.FC = () => {
+  const { user, isAuthenticated, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      notificationsService
+        .getUnreadCount()
+        .then(setUnreadCount)
+        .catch(() => {});
+    } else {
+      setUnreadCount(0);
+    }
+  }, [isAuthenticated]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const isAdmin = user?.roles?.some((r) => r === 'ADMIN' || r === 'SUPER_ADMIN');
+
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -36,21 +60,58 @@ export const Navbar: React.FC = () => {
               Auksionlar
             </Button>
           </Link>
-          <Link to="/login">
-            <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-              <User className="w-4 h-4 mr-1.5" />
-              Kirish
-            </Button>
-          </Link>
-          <Link to="/register">
-            <Button variant="primary" size="sm">
-              <PlusCircle className="w-4 h-4 mr-1.5" />
-              Ro'yxatdan o'tish
-            </Button>
-          </Link>
+
+          {isAuthenticated && user ? (
+            <div className="flex items-center space-x-2">
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="outline" size="sm" className="text-amber-600 border-amber-300">
+                    <Shield className="w-4 h-4 mr-1" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
+
+              <Link to="/dashboard" className="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                )}
+              </Link>
+
+              <Link to="/dashboard">
+                <Button variant="outline" size="sm">
+                  <User className="w-4 h-4 mr-1.5 text-emerald-600" />
+                  <span>{user.full_name?.split(' ')[0] || 'Kabinet'}</span>
+                </Button>
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                title="Tizimdan chiqish"
+                className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+                  <User className="w-4 h-4 mr-1.5" />
+                  Kirish
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button variant="primary" size="sm">
+                  <PlusCircle className="w-4 h-4 mr-1.5" />
+                  Ro'yxatdan o'tish
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
   );
 };
-

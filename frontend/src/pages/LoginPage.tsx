@@ -4,6 +4,7 @@ import { Gavel, Lock, Phone, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { authService } from '../services/api';
+import { useAuth } from '../app/providers';
 
 export const LoginPage: React.FC = () => {
   const [phone, setPhone] = useState<string>('+998');
@@ -11,6 +12,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +20,8 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await authService.login({ phone, password });
+      const tokens = await authService.login({ phone, password });
+      await login(tokens);
       navigate('/dashboard');
     } catch (err: any) {
       const msg = err.response?.data?.detail || 'Kirishda xatolik yuz berdi. Ma\'lumotlarni tekshiring.';
