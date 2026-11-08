@@ -29,15 +29,16 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
 }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('lang');
-    if (saved === 'uz' || saved === 'ru' || saved === 'en') return saved;
+    if (saved === 'uz' || saved === 'ru' || saved === 'en') return saved as Language;
+    if (userLanguage === 'uz' || userLanguage === 'ru' || userLanguage === 'en') return userLanguage as Language;
     return 'uz'; // default is uz
   });
 
-  // Sync with user's backend profile when available
+  // Only sync from user profile if user hasn't explicitly set a preference in localStorage
   useEffect(() => {
-    if (userLanguage === 'uz' || userLanguage === 'ru' || userLanguage === 'en') {
-      setLanguageState(userLanguage);
-      localStorage.setItem('lang', userLanguage);
+    const saved = localStorage.getItem('lang');
+    if (!saved && (userLanguage === 'uz' || userLanguage === 'ru' || userLanguage === 'en')) {
+      setLanguageState(userLanguage as Language);
     }
   }, [userLanguage]);
 

@@ -81,7 +81,7 @@ export const Navbar: React.FC = () => {
                 type="text"
                 value={navSearch}
                 onChange={(e) => setNavSearch(e.target.value)}
-                placeholder="Lot nomi yoki tavsifi bo'yicha qidirish..."
+                placeholder={t.nav.searchPlaceholder}
                 className="w-full pl-10 pr-9 py-2 text-sm bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 placeholder-slate-400"
               />
               {navSearch && (
@@ -160,11 +160,11 @@ export const Navbar: React.FC = () => {
 
               <Link
                 to="/dashboard?section=deposits"
-                title="Mening hisobim va balans"
+                title={t.nav.myWallet}
                 className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
               >
                 <Wallet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Hisobim</span>
+                <span>{t.nav.myWallet}</span>
               </Link>
 
               <Link

@@ -26,6 +26,7 @@ import {
 } from '../services/api';
 import { Auction, Category } from '../types';
 import { useAuth } from '../app/providers';
+import { useLanguage } from '../context/LanguageContext';
 
 const UZBEKISTAN_REGIONS = [
   'Barcha hududlar',
@@ -47,6 +48,7 @@ const UZBEKISTAN_REGIONS = [
 
 export const AuctionsPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || 'all';
@@ -55,7 +57,7 @@ export const AuctionsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
   const [selectedCondition, setSelectedCondition] = useState<string>('all');
-  const [selectedRegion, setSelectedRegion] = useState<string>('Barcha hududlar');
+  const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'ending_soon' | 'price_asc' | 'price_desc' | 'bids'>('newest');
 
   const [auctions, setAuctions] = useState<Auction[]>([]);
@@ -235,7 +237,7 @@ export const AuctionsPage: React.FC = () => {
     setSearchQuery('');
     setSelectedCategory('all');
     setSelectedCondition('all');
-    setSelectedRegion('Barcha hududlar');
+    setSelectedRegion('all');
     setSortBy('newest');
     setSearchParams(new URLSearchParams());
   };
@@ -339,7 +341,7 @@ export const AuctionsPage: React.FC = () => {
         if (a.product?.condition !== selectedCondition) return false;
       }
       // Region filter
-      if (selectedRegion !== 'Barcha hududlar') {
+      if (selectedRegion !== 'all') {
         const desc = (a.product?.description || '').toLowerCase();
         const title = (a.product?.title || '').toLowerCase();
         const rName = selectedRegion.toLowerCase();
@@ -376,21 +378,21 @@ export const AuctionsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center space-x-2 text-xs text-slate-500">
           <Link to="/" className="hover:text-emerald-600 transition-colors">
-            Bosh sahifa
+            {t.auctions.breadcrumbHome}
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
           <span className="font-semibold text-slate-900 dark:text-slate-100">
-            Auksionlar bozori
+            {t.auctions.breadcrumbMarket}
           </span>
         </div>
 
         <div className="flex items-center space-x-2">
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
             <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
-            Jonli savdo
+            {t.auctions.liveBadge}
           </span>
           <span className="text-xs text-slate-500">
-            {filteredAndSortedAuctions.length} ta lot faol
+            {filteredAndSortedAuctions.length} {t.auctions.activeLotsCount}
           </span>
         </div>
       </div>
@@ -400,10 +402,10 @@ export const AuctionsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center space-x-2.5">
             <Gavel className="w-7 h-7 text-emerald-600" />
-            <span>Faol Auksionlar Bozori</span>
+            <span>{t.auctions.pageTitle}</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Tekshirilgan tovarlar, real raqobat va 100% qaytariluvchi depozit kafolati
+            {t.auctions.pageSubtitle}
           </p>
         </div>
 
@@ -414,7 +416,7 @@ export const AuctionsPage: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Lot nomi yoki parametr bo'yicha qidirish..."
+            placeholder={t.auctions.searchPlaceholder}
             className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 shadow-sm"
           />
           {searchQuery && (
@@ -439,7 +441,7 @@ export const AuctionsPage: React.FC = () => {
               : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
           }`}
         >
-          Barcha toifalar
+          {t.auctions.allCategories}
         </button>
 
         {categories.map((c) => (
@@ -463,13 +465,13 @@ export const AuctionsPage: React.FC = () => {
         <div className="flex items-center gap-1.5 overflow-x-auto">
           <span className="text-slate-400 font-medium mr-1 hidden sm:inline flex items-center">
             <SlidersHorizontal className="w-3.5 h-3.5 mr-1" />
-            Holati:
+            {t.common.status}:
           </span>
           {[
-            { id: 'all', label: 'Barchasi' },
-            { id: 'NEW', label: 'Yangi' },
-            { id: 'LIKE_NEW', label: 'Deyarli yangi' },
-            { id: 'USED', label: 'Ishlatilgan' },
+            { id: 'all', label: t.auctions.conditionAll },
+            { id: 'NEW', label: t.auctions.conditionNew },
+            { id: 'LIKE_NEW', label: t.auctions.conditionLikeNew },
+            { id: 'USED', label: t.auctions.conditionUsed },
           ].map((cond) => (
             <button
               key={cond.id}
@@ -495,7 +497,8 @@ export const AuctionsPage: React.FC = () => {
               onChange={(e) => setSelectedRegion(e.target.value)}
               className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs py-1.5 px-2.5 text-slate-700 dark:text-slate-200 focus:ring-1 focus:ring-emerald-500 font-medium"
             >
-              {UZBEKISTAN_REGIONS.map((r) => (
+              <option value="all">{t.auctions.allRegions}</option>
+              {UZBEKISTAN_REGIONS.filter((r) => r !== 'Barcha hududlar').map((r) => (
                 <option key={r} value={r}>
                   {r}
                 </option>
@@ -511,34 +514,34 @@ export const AuctionsPage: React.FC = () => {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs py-1.5 px-2.5 text-slate-700 dark:text-slate-200 focus:ring-1 focus:ring-emerald-500 font-medium"
             >
-              <option value="newest">Yangi qo'shilganlar</option>
-              <option value="ending_soon">Tugash vaqti yaqin</option>
-              <option value="price_asc">Narx: arzonroq</option>
-              <option value="price_desc">Narx: qimmatroq</option>
-              <option value="bids">Eng ko'p taklif tushgan</option>
+              <option value="newest">{t.auctions.sortNewest}</option>
+              <option value="ending_soon">{t.auctions.sortEndingSoon}</option>
+              <option value="price_asc">{t.auctions.sortPriceAsc}</option>
+              <option value="price_desc">{t.auctions.sortPriceDesc}</option>
+              <option value="bids">{t.auctions.sortBids}</option>
             </select>
           </div>
 
           {/* Reset Filters button if any active */}
-          {(searchQuery || selectedCategory !== 'all' || selectedCondition !== 'all' || selectedRegion !== 'Barcha hududlar') && (
+          {(searchQuery || selectedCategory !== 'all' || selectedCondition !== 'all' || selectedRegion !== 'all') && (
             <button
               onClick={handleResetAllFilters}
               className="text-xs text-rose-500 hover:text-rose-700 font-semibold flex items-center space-x-1 ml-1"
             >
               <X className="w-3.5 h-3.5" />
-              <span>Tozalash</span>
+              <span>{t.auctions.clearFilters}</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Active Filter Tags */}
-      {(searchQuery || selectedCategory !== 'all' || selectedCondition !== 'all' || selectedRegion !== 'Barcha hududlar') && (
+      {(searchQuery || selectedCategory !== 'all' || selectedCondition !== 'all' || selectedRegion !== 'all') && (
         <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-slate-400 font-medium">Qidiruv filtrlari:</span>
+          <span className="text-slate-400 font-medium">{t.dashboard.activeFilters}</span>
           {searchQuery && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-              Qidiruv: "{searchQuery}"
+              {t.common.search}: "{searchQuery}"
               <button onClick={handleClearSearch} className="hover:text-emerald-900">
                 <X className="w-3 h-3" />
               </button>
@@ -546,7 +549,7 @@ export const AuctionsPage: React.FC = () => {
           )}
           {selectedCategory !== 'all' && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-              Toifa: {categories.find((c) => c.id === selectedCategory)?.name || selectedCategory}
+              {t.modal.categoryLabel.replace(' *', '')}: {categories.find((c) => c.id === selectedCategory)?.name || selectedCategory}
               <button onClick={() => handleCategorySelect('all')} className="hover:text-blue-900">
                 <X className="w-3 h-3" />
               </button>
@@ -554,16 +557,16 @@ export const AuctionsPage: React.FC = () => {
           )}
           {selectedCondition !== 'all' && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-              Holati: {selectedCondition === 'NEW' ? 'Yangi' : selectedCondition === 'LIKE_NEW' ? 'Deyarli yangi' : 'Ishlatilgan'}
+              {t.common.status}: {selectedCondition === 'NEW' ? t.common.new : selectedCondition === 'LIKE_NEW' ? t.common.likeNew : t.common.used}
               <button onClick={() => setSelectedCondition('all')} className="hover:text-amber-900">
                 <X className="w-3 h-3" />
               </button>
             </span>
           )}
-          {selectedRegion !== 'Barcha hududlar' && (
+          {selectedRegion !== 'all' && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-              Hudud: {selectedRegion}
-              <button onClick={() => setSelectedRegion('Barcha hududlar')} className="hover:text-purple-900">
+              {t.settings.region.replace(' *', '')}: {selectedRegion}
+              <button onClick={() => setSelectedRegion('all')} className="hover:text-purple-900">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -585,14 +588,14 @@ export const AuctionsPage: React.FC = () => {
           </div>
           <div className="space-y-1">
             <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">
-              Filtrlarga mos keluvchi auksion topilmadi
+              {t.auctions.emptyTitle}
             </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Qidiruv so'zini qisqartirib ko'ring yoki boshqa toifa va hududni tanlang.
+              {t.auctions.emptyDesc}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={handleResetAllFilters}>
-            Barcha filtrlarni tozalash
+            {t.auctions.clearFilters}
           </Button>
         </div>
       ) : (
@@ -619,14 +622,14 @@ export const AuctionsPage: React.FC = () => {
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-0.5 rounded-full flex items-center font-medium">
-                          <Film className="w-3 h-3 mr-1 text-emerald-400" /> Video e'lon
+                          <Film className="w-3 h-3 mr-1 text-emerald-400" /> {t.auctions.videoLot}
                         </span>
                       </div>
                     </div>
                   ) : (
                     <img
                       src={mediaUrl}
-                      alt={auction.product?.title || 'Mahsulot'}
+                      alt={auction.product?.title || t.common.appName}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   )}
@@ -644,17 +647,17 @@ export const AuctionsPage: React.FC = () => {
                       className="text-[10px] font-bold shadow-md uppercase tracking-wider backdrop-blur-md"
                     >
                       {condition === 'NEW'
-                        ? 'Yangi'
+                        ? t.common.new
                         : condition === 'LIKE_NEW'
-                        ? 'Deyarli yangi'
-                        : 'Ishlatilgan'}
+                        ? t.common.likeNew
+                        : t.common.used}
                     </Badge>
                   </div>
 
                   {/* Top-right: Heart Favorite Button */}
                   <button
                     onClick={(e) => handleToggleFavorite(e, auction.id)}
-                    title={isFav ? "Sevimlilardan o'chirish" : "Sevimlilarga qo'shish"}
+                    title={isFav ? t.dashboard.removeFromFavorites : t.dashboard.addToFavorites}
                     className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md transition-all shadow-md ${
                       isFav
                         ? 'bg-rose-500 text-white scale-110'
@@ -668,11 +671,11 @@ export const AuctionsPage: React.FC = () => {
                   <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-[11px] font-semibold text-white">
                     <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center space-x-1">
                       <Clock className="w-3 h-3 text-amber-400" />
-                      <span>{auction.status}</span>
+                      <span>{auction.status === 'ACTIVE' ? t.common.active : auction.status === 'COMPLETED' ? t.common.completed : auction.status}</span>
                     </div>
                     <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center space-x-1">
                       <Users className="w-3 h-3 text-emerald-400" />
-                      <span>{auction.participant_count || 0} ishtirokchi</span>
+                      <span>{auction.participant_count || 0} {t.common.participants}</span>
                     </div>
                   </div>
                 </div>
@@ -692,13 +695,13 @@ export const AuctionsPage: React.FC = () => {
                   <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-end justify-between">
                       <div>
-                        <div className="text-[11px] text-slate-400 font-medium">Joriy narx:</div>
+                        <div className="text-[11px] text-slate-400 font-medium">{t.auctions.currentBid}:</div>
                         <div className="text-base font-extrabold text-emerald-600">
                           {formatUZS(auction.current_highest_bid || auction.starting_price)}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[10px] text-slate-400 font-medium">Depozit:</div>
+                        <div className="text-[10px] text-slate-400 font-medium">{t.auctions.deposit}:</div>
                         <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
                           {formatUZS(auction.deposit_amount)}
                         </div>
@@ -709,7 +712,7 @@ export const AuctionsPage: React.FC = () => {
                   {/* Action Button */}
                   <Link to={`/auctions/${auction.id}`} className="block pt-1">
                     <Button size="sm" className="w-full text-xs font-bold py-2 rounded-xl">
-                      Taklif kiritish
+                      {t.auctions.bidBtn}
                     </Button>
                   </Link>
                 </div>

@@ -48,12 +48,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     applyThemeToDOM(theme);
   }, [theme]);
 
-  // Sync with user's backend profile when available
+  // Sync with user's backend profile when available if not set locally
   useEffect(() => {
-    if (userTheme === 'dark' || userTheme === 'light') {
-      setThemeState(userTheme);
-      localStorage.setItem('theme', userTheme);
-      applyThemeToDOM(userTheme);
+    const saved = localStorage.getItem('theme');
+    if (!saved && (userTheme === 'dark' || userTheme === 'light')) {
+      setThemeState(userTheme as Theme);
+      applyThemeToDOM(userTheme as Theme);
     }
   }, [userTheme]);
 

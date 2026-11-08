@@ -648,12 +648,12 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="font-bold text-slate-900 dark:text-slate-100 truncate text-sm">
-                  {user?.full_name || 'Foydalanuvchi'}
+                  {user?.full_name || t.nav.cabinet}
                 </h2>
                 <p className="text-xs text-slate-400 truncate">{user?.phone}</p>
                 <div className="flex items-center text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
                   <ShieldCheck className="w-3 h-3 mr-1 shrink-0" />
-                  <span>{user?.is_verified ? 'Tasdiqlangan' : 'Standart'}</span>
+                  <span>{user?.is_verified ? t.common.verified : t.common.standard}</span>
                 </div>
               </div>
             </div>
@@ -666,7 +666,7 @@ export const DashboardPage: React.FC = () => {
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow-md shadow-emerald-600/20 flex items-center justify-center text-xs"
             >
               <PlusCircle className="w-4 h-4 mr-2" />
-              <span>+ Yangi lot joylash</span>
+              <span>{t.dashboard.postNewLot}</span>
             </Button>
           </Card>
 
@@ -684,7 +684,7 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <Gavel className="w-4 h-4 text-emerald-600" />
-                  <span>Bozordagi lotlar</span>
+                  <span>{t.dashboard.activeAuctions}</span>
                 </span>
                 <Badge variant={activeSection === 'market' ? 'success' : 'neutral'}>
                   {marketAuctions.length}
@@ -701,7 +701,7 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <Radio className="w-4 h-4 text-emerald-500" />
-                  <span>Ishtiroklarim</span>
+                  <span>{t.dashboard.participating}</span>
                 </span>
                 <Badge variant={activeSection === 'participating' ? 'success' : 'neutral'}>
                   {participatingAuctions.length}
@@ -718,7 +718,7 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <Package className="w-4 h-4 text-blue-500" />
-                  <span>Sotuvdagi lotlarim</span>
+                  <span>{t.dashboard.myAuctions}</span>
                 </span>
                 <Badge variant={activeSection === 'created' ? 'success' : 'neutral'}>
                   {createdAuctions.length}
@@ -735,7 +735,7 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <Trophy className="w-4 h-4 text-amber-500" />
-                  <span>Yutib olingan lotlar</span>
+                  <span>{t.dashboard.wonAuctions}</span>
                 </span>
                 <Badge variant={activeSection === 'won' ? 'warning' : 'neutral'}>
                   {wonAuctions.length}
@@ -752,7 +752,7 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <Heart className="w-4 h-4 text-rose-500" />
-                  <span>Sevimlilar</span>
+                  <span>{t.dashboard.favorites}</span>
                 </span>
                 <Badge variant={activeSection === 'favorites' ? 'danger' : 'neutral'}>
                   {favoriteAuctions.length}
@@ -769,7 +769,7 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <Layers className="w-4 h-4 text-purple-500" />
-                  <span>Barcha auksionlarim</span>
+                  <span>{t.dashboard.allMyAuctions}</span>
                 </span>
                 <Badge variant="neutral">{allUserAuctions.length}</Badge>
               </button>
@@ -787,7 +787,7 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <CreditCard className="w-4 h-4 text-teal-500" />
-                  <span>Kafolat depozitlari</span>
+                  <span>{t.dashboard.deposits}</span>
                 </span>
                 <Badge variant="neutral">{deposits.length}</Badge>
               </button>
@@ -802,11 +802,11 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <Bell className="w-4 h-4 text-rose-500" />
-                  <span>Bildirishnomalar</span>
+                  <span>{t.dashboard.notifications}</span>
                 </span>
                 {notifications.filter((n) => !n.is_read).length > 0 ? (
                   <Badge variant="danger">
-                    {notifications.filter((n) => !n.is_read).length} yangi
+                    {notifications.filter((n) => !n.is_read).length} {t.dashboard.newBadge}
                   </Badge>
                 ) : (
                   <Badge variant="neutral">{notifications.length}</Badge>
@@ -823,7 +823,7 @@ export const DashboardPage: React.FC = () => {
               >
                 <span className="flex items-center space-x-2.5">
                   <Settings className="w-4 h-4 text-slate-500" />
-                  <span>Sozlamalar</span>
+                  <span>{t.dashboard.settings}</span>
                 </span>
               </button>
             </div>
@@ -834,7 +834,7 @@ export const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-between text-xs text-emerald-100/90 font-medium">
               <span className="flex items-center space-x-1.5">
                 <Wallet className="w-3.5 h-3.5" />
-                <span>Mening hisobim (Hamyon)</span>
+                <span>{t.dashboard.walletTitle}</span>
               </span>
               <ShieldCheck className="w-4 h-4 text-emerald-200" />
             </div>
@@ -844,7 +844,7 @@ export const DashboardPage: React.FC = () => {
                 {formatUZS(walletBalance?.balance_tiyin || 0)}
               </div>
               <div className="text-[11px] text-emerald-100/80 mt-1 flex items-center justify-between">
-                <span>Band depozitlar:</span>
+                <span>{t.dashboard.lockedDeposits}:</span>
                 <span className="font-bold">
                   {formatUZS(walletBalance?.locked_deposits_tiyin || lockedDeposits)}
                 </span>
@@ -856,7 +856,7 @@ export const DashboardPage: React.FC = () => {
               className="w-full py-2 px-3 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 active:scale-[0.98] transition-all font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md"
             >
               <ArrowUpRight className="w-4 h-4 text-emerald-600" />
-              <span>Pulni chiqarib olish</span>
+              <span>{t.dashboard.withdraw}</span>
             </button>
           </Card>
         </aside>
@@ -871,29 +871,29 @@ export const DashboardPage: React.FC = () => {
                 <div>
                   <h1 className="text-2xl font-extrabold tracking-tight">
                     {activeSection === 'market'
-                      ? 'Bozordagi faol auksionlar'
+                      ? t.dashboard.marketTitle
                       : activeSection === 'participating'
-                      ? 'Ishtirok etayotgan auksionlarim'
+                      ? t.dashboard.participatingTitle
                       : activeSection === 'created'
-                      ? 'Mening auksionlarim (Sotuvdagi lotlar)'
+                      ? t.dashboard.createdTitle
                       : activeSection === 'won'
-                      ? 'Yutib olingan auksionlar'
+                      ? t.dashboard.wonTitle
                       : activeSection === 'favorites'
-                      ? 'Sevimli auksionlarim'
-                      : 'Barcha auksionlarim tarixi'}
+                      ? t.dashboard.favoritesTitle
+                      : t.dashboard.allAuctionsTitle}
                   </h1>
                   <p className="text-xs text-slate-500 mt-1">
                     {activeSection === 'market'
-                      ? 'Platformadagi hozirda ochiq barcha tekshirilgan lotlar va savdolar'
+                      ? t.dashboard.marketSubtitle
                       : activeSection === 'participating'
-                      ? 'Siz kafolat depozitini to\'lab taklif kiritgan barcha lotlar'
+                      ? t.dashboard.participatingSubtitle
                       : activeSection === 'created'
-                      ? 'O\'zingiz sotuvga qo\'ygan va faol savdoda bo\'lgan auksionlar'
+                      ? t.dashboard.createdSubtitle
                       : activeSection === 'won'
-                      ? 'Siz eng yuqori narx taklifi berib yutib olgan lotlar'
+                      ? t.dashboard.wonSubtitle
                       : activeSection === 'favorites'
-                      ? 'Sizga yoqqan va saqlab qo\'yilgan sevimli lotlar'
-                      : 'Barcha ishtiroklar va sotuvdagi auksionlarning umumiy ro\'yxati'}
+                      ? t.dashboard.favoritesSubtitle
+                      : t.dashboard.allAuctionsSubtitle}
                   </p>
                 </div>
 
@@ -905,7 +905,7 @@ export const DashboardPage: React.FC = () => {
                     className="shrink-0 text-xs"
                   >
                     <PlusCircle className="w-4 h-4 mr-1.5" />
-                    Yangi lot joylash
+                    {t.dashboard.postNewLot}
                   </Button>
                 </div>
               </div>
@@ -920,7 +920,7 @@ export const DashboardPage: React.FC = () => {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Lot nomi yoki tavsifi bo'yicha qidirish..."
+                      placeholder={t.nav.searchPlaceholder}
                       className="w-full pl-10 pr-9 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
                     />
                     {searchQuery && (
@@ -941,7 +941,7 @@ export const DashboardPage: React.FC = () => {
                       onChange={(e) => setFilterCategory(e.target.value)}
                       className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
                     >
-                      <option value="all">Barcha toifalar</option>
+                      <option value="all">{t.dashboard.allCategories}</option>
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
@@ -957,10 +957,10 @@ export const DashboardPage: React.FC = () => {
                       onChange={(e) => setFilterStatus(e.target.value)}
                       className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
                     >
-                      <option value="all">Barcha holatlar</option>
-                      <option value="ACTIVE">Faol savdolar</option>
-                      <option value="SCHEDULED">Kutilayotgan</option>
-                      <option value="COMPLETED">Yakunlangan</option>
+                      <option value="all">{t.dashboard.allStatuses}</option>
+                      <option value="ACTIVE">{t.common.active}</option>
+                      <option value="SCHEDULED">{t.dashboard.scheduledStatus}</option>
+                      <option value="COMPLETED">{t.common.completed}</option>
                     </select>
                   </div>
 
@@ -971,11 +971,11 @@ export const DashboardPage: React.FC = () => {
                       onChange={(e) => setSortBy(e.target.value)}
                       className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
                     >
-                      <option value="newest">Yangi qo'shilganlar</option>
-                      <option value="ending_soon">Tugash vaqti yaqin</option>
-                      <option value="price_asc">Narx: arzonroq</option>
-                      <option value="price_desc">Narx: qimmatroq</option>
-                      <option value="bids_count">Takliflar ko'p</option>
+                      <option value="newest">{t.dashboard.sortNewest}</option>
+                      <option value="ending_soon">{t.dashboard.sortEndingSoon}</option>
+                      <option value="price_asc">{t.dashboard.sortPriceAsc}</option>
+                      <option value="price_desc">{t.dashboard.sortPriceDesc}</option>
+                      <option value="bids_count">{t.dashboard.sortBidsCount}</option>
                     </select>
                   </div>
                 </div>
@@ -983,7 +983,7 @@ export const DashboardPage: React.FC = () => {
                 {/* Active Filter Tags */}
                 {(searchQuery || filterCategory !== 'all' || filterStatus !== 'all') && (
                   <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 flex-wrap">
-                    <span>Faol filtrlar:</span>
+                    <span>{t.dashboard.activeFilters}</span>
                     {searchQuery && (
                       <span className="bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 px-2.5 py-0.5 rounded-lg flex items-center font-medium">
                         "{searchQuery}"
@@ -992,13 +992,13 @@ export const DashboardPage: React.FC = () => {
                     )}
                     {filterCategory !== 'all' && (
                       <span className="bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg flex items-center font-medium">
-                        {categories.find((c) => c.id === filterCategory)?.name || 'Toifa'}
+                        {categories.find((c) => c.id === filterCategory)?.name || t.common.all}
                         <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setFilterCategory('all')} />
                       </span>
                     )}
                     {filterStatus !== 'all' && (
                       <span className="bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg flex items-center font-medium">
-                        Holat: {filterStatus}
+                        {t.common.status}: {filterStatus === 'ACTIVE' ? t.common.active : filterStatus === 'COMPLETED' ? t.common.completed : filterStatus === 'SCHEDULED' ? t.dashboard.scheduledStatus : filterStatus}
                         <X className="w-3 h-3 ml-1 cursor-pointer" onClick={() => setFilterStatus('all')} />
                       </span>
                     )}
@@ -1010,7 +1010,7 @@ export const DashboardPage: React.FC = () => {
                       }}
                       className="text-emerald-600 hover:underline font-semibold ml-auto text-xs"
                     >
-                      Filtrlarni tozalash
+                      {t.dashboard.clearFilters}
                     </button>
                   </div>
                 )}
@@ -1032,35 +1032,35 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
                     {searchQuery || filterCategory !== 'all' || filterStatus !== 'all'
-                      ? 'Filtr parametrlariga mos lotlar topilmadi'
+                      ? t.dashboard.emptySearchTitle
                       : activeSection === 'market'
-                      ? 'Hozircha ochiq auksionlar mavjud emas'
+                      ? t.dashboard.noAuctionsFound
                       : activeSection === 'participating'
-                      ? 'Siz hali birorta auksionda ishtirok etmadingiz'
+                      ? t.dashboard.emptyParticipatingTitle
                       : activeSection === 'created'
-                      ? 'Siz hali sotuvga mahsulot qo\'ymadingiz'
+                      ? t.dashboard.emptyCreatedTitle
                       : activeSection === 'won'
-                      ? 'Hozircha yutib olingan lotlar mavjud emas'
+                      ? t.dashboard.emptyWonTitle
                       : activeSection === 'favorites'
-                      ? 'Sevimli auksionlar ro\'yxati bo\'sh'
-                      : 'Auksionlar ro\'yxati bo\'sh'}
+                      ? t.dashboard.emptyFavoritesTitle
+                      : t.dashboard.noAuctionsFound}
                   </h3>
                   <p className="text-xs text-slate-500 max-w-md mx-auto">
                     {searchQuery || filterCategory !== 'all' || filterStatus !== 'all'
-                      ? 'Filtrlarni tozalab ko\'ring yoki boshqa so\'z orqali qidiring.'
+                      ? t.dashboard.emptySearchDesc
                       : activeSection === 'participating'
-                      ? 'Bozordagi faol auksionlarni ko\'rib chiqing va kafolat depozitini to\'lab taklif bering.'
+                      ? t.dashboard.emptyParticipatingDesc
                       : activeSection === 'favorites'
-                      ? 'Sizga yoqqan lotlarni yurakcha tugmasi orqali saqlab qo\'yishingiz mumkin.'
+                      ? t.dashboard.emptyFavoritesDesc
                       : activeSection === 'created'
-                      ? 'Yangi lot e\'lon qiling va auksion orqali mahsulotingizni qulay narxda soting.'
-                      : 'Auksionlar maydonini ko\'rib chiqing yoki o\'zingiz yangi lot yarating.'}
+                      ? t.dashboard.emptyCreatedDesc
+                      : t.dashboard.depositRefundGuarantee}
                   </p>
                   <div>
                     {activeSection === 'created' ? (
                       <Button onClick={() => setIsModalOpen(true)}>
                         <PlusCircle className="w-4 h-4 mr-1.5" />
-                        + Yangi lot joylash
+                        {t.dashboard.postNewLot}
                       </Button>
                     ) : activeSection === 'market' ? (
                       <Button
@@ -1071,13 +1071,13 @@ export const DashboardPage: React.FC = () => {
                           setFilterStatus('all');
                         }}
                       >
-                        Filtrlarni tozalash
+                        {t.dashboard.clearFilters}
                       </Button>
                     ) : (
                       <div className="flex items-center justify-center">
                         <Button onClick={() => handleSectionChange('market')}>
                           <Gavel className="w-4 h-4 mr-1.5" />
-                          Bozordagi lotlarni ko'rish
+                          {t.dashboard.viewLot}
                         </Button>
                       </div>
                     )}
@@ -1106,14 +1106,14 @@ export const DashboardPage: React.FC = () => {
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                                   <span className="bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-0.5 rounded-full flex items-center">
-                                    <VideoIcon className="w-3 h-3 mr-1 text-emerald-400" /> Video lot
+                                    <VideoIcon className="w-3 h-3 mr-1 text-emerald-400" /> {t.dashboard.videoLot}
                                   </span>
                                 </div>
                               </div>
                             ) : (
                               <img
                                 src={mediaUrl}
-                                alt={auc.product?.title || 'Auksion'}
+                                alt={auc.product?.title || t.common.appName}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
                             )}
@@ -1131,11 +1131,11 @@ export const DashboardPage: React.FC = () => {
                                 className="backdrop-blur-md shadow-sm text-[10px]"
                               >
                                 {auc.status === 'ACTIVE'
-                                  ? 'Faol'
+                                  ? t.common.active
                                   : auc.status === 'COMPLETED'
-                                  ? 'Yakunlangan'
+                                  ? t.common.completed
                                   : auc.status === 'SCHEDULED'
-                                  ? 'Kutilmoqda'
+                                  ? t.dashboard.scheduledStatus
                                   : auc.status}
                               </Badge>
                             </div>
@@ -1143,7 +1143,7 @@ export const DashboardPage: React.FC = () => {
                             {/* Heart Favorite Toggle Button */}
                             <button
                               onClick={(e) => handleToggleFavorite(e, auc.id)}
-                              title={favoriteIds.has(auc.id) ? "Sevimlilardan o'chirish" : "Sevimlilarga qo'shish"}
+                              title={favoriteIds.has(auc.id) ? t.dashboard.removeFromFavorites : t.dashboard.addToFavorites}
                               className={`absolute top-2.5 right-2.5 z-10 p-1.5 rounded-lg backdrop-blur-md transition-all shadow-md ${
                                 favoriteIds.has(auc.id)
                                   ? 'bg-rose-500 text-white scale-105'
@@ -1168,20 +1168,20 @@ export const DashboardPage: React.FC = () => {
                           {/* Card Content */}
                           <div className="p-4 space-y-2.5">
                             <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-emerald-600 transition-colors leading-snug">
-                              {auc.product?.title || 'Auksion loti'}
+                              {auc.product?.title || t.common.appName}
                             </h3>
 
                             {/* Prices */}
                             <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
                               <div className="flex items-baseline justify-between">
-                                <span className="text-[11px] text-slate-500">Joriy narx:</span>
+                                <span className="text-[11px] text-slate-500">{t.dashboard.currentBid}:</span>
                                 <span className="text-sm font-extrabold text-emerald-600">
                                   {formatUZS(auc.current_highest_bid)}
                                 </span>
                               </div>
                               <div className="flex items-center justify-between text-[10px] text-slate-400">
-                                <span>Boshlang'ich: {formatUZS(auc.starting_price)}</span>
-                                <span>Depozit: {formatUZS(auc.deposit_amount)}</span>
+                                <span>{t.dashboard.startPrice}: {formatUZS(auc.starting_price)}</span>
+                                <span>{t.dashboard.depositAmount}: {formatUZS(auc.deposit_amount)}</span>
                               </div>
                             </div>
 
@@ -1189,9 +1189,9 @@ export const DashboardPage: React.FC = () => {
                             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
                               <span className="flex items-center">
                                 <Gavel className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                                {auc.bid_count} ta taklif
+                                {auc.bid_count} {t.dashboard.bidsCount}
                               </span>
-                              <span>{auc.participant_count} ishtirokchi</span>
+                              <span>{auc.participant_count} {t.common.participants}</span>
                             </div>
                           </div>
                         </div>
@@ -1201,7 +1201,7 @@ export const DashboardPage: React.FC = () => {
                           <Link to={`/auctions/${auc.id}`}>
                             <Button variant="outline" size="sm" className="w-full text-xs font-semibold justify-center">
                               <Eye className="w-3.5 h-3.5 mr-1.5" />
-                              Lotni ko'rish
+                              {t.dashboard.viewLot}
                             </Button>
                           </Link>
                         </div>
@@ -1218,9 +1218,9 @@ export const DashboardPage: React.FC = () => {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-extrabold tracking-tight">Shaxsiy hisob va Kafolat depozitlari</h1>
+                  <h1 className="text-2xl font-extrabold tracking-tight">{t.dashboard.depositsPageTitle}</h1>
                   <p className="text-xs text-slate-500 mt-1">
-                    Yutqazilgan auksion depozitlari, hamyon balansi va bank kartasiga chiqarib olishlar
+                    {t.dashboard.depositsPageSubtitle}
                   </p>
                 </div>
 
@@ -1230,7 +1230,7 @@ export const DashboardPage: React.FC = () => {
                   className="font-bold shrink-0 shadow-lg shadow-emerald-600/10"
                 >
                   <ArrowUpRight className="w-4 h-4 mr-1.5" />
-                  Pulni chiqarib olish
+                  {t.dashboard.withdraw}
                 </Button>
               </div>
 
@@ -1241,15 +1241,15 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center justify-between text-xs text-emerald-100 font-medium">
                     <span className="flex items-center space-x-2">
                       <Wallet className="w-4 h-4" />
-                      <span>Mening hamyonim (Mavjud balans)</span>
+                      <span>{t.dashboard.availableBalance}</span>
                     </span>
-                    <Badge className="bg-white/20 text-white border-none text-[10px]">Yechib olish mumkin</Badge>
+                    <Badge className="bg-white/20 text-white border-none text-[10px]">{t.dashboard.withdrawable}</Badge>
                   </div>
                   <div className="text-3xl font-black tracking-tight">
                     {formatUZS(walletBalance?.balance_tiyin || 0)}
                   </div>
                   <p className="text-[11px] text-emerald-100/90 leading-relaxed">
-                    Yutqazilgan auksionlarning barcha kafolat depozitlari to'g'ridan-to'g'ri shu yerga qaytadi.
+                    {t.dashboard.walletCardDesc}
                   </p>
                 </Card>
 
@@ -1258,15 +1258,15 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
                     <span className="flex items-center space-x-2">
                       <Shield className="w-4 h-4 text-amber-400" />
-                      <span>Faol auksionlarda band depozitlar</span>
+                      <span>{t.dashboard.lockedDeposits}</span>
                     </span>
-                    <Badge className="bg-amber-500/20 text-amber-300 border-none text-[10px]">Muzlatilgan</Badge>
+                    <Badge className="bg-amber-500/20 text-amber-300 border-none text-[10px]">{t.dashboard.frozen}</Badge>
                   </div>
                   <div className="text-3xl font-black tracking-tight text-amber-400">
                     {formatUZS(walletBalance?.locked_deposits_tiyin || lockedDeposits)}
                   </div>
                   <p className="text-[11px] text-slate-400 leading-relaxed">
-                    Auksion yakunlangach g'olib bo'lmagan taqdiringizda mablag' 100% hamyon balansingizga qaytadi.
+                    {t.dashboard.lockedCardDesc}
                   </p>
                 </Card>
               </div>
@@ -1282,7 +1282,7 @@ export const DashboardPage: React.FC = () => {
                   }`}
                 >
                   <Receipt className="w-3.5 h-3.5" />
-                  <span>Hisob amaliyotlari ({walletTransactions.length})</span>
+                  <span>{t.dashboard.walletTransactions} ({walletTransactions.length})</span>
                 </button>
 
                 <button
@@ -1294,7 +1294,7 @@ export const DashboardPage: React.FC = () => {
                   }`}
                 >
                   <ArrowUpRight className="w-3.5 h-3.5" />
-                  <span>Kartaga chiqarib olishlar ({withdrawals.length})</span>
+                  <span>{t.dashboard.withdrawHistory} ({withdrawals.length})</span>
                 </button>
 
                 <button
@@ -1306,7 +1306,7 @@ export const DashboardPage: React.FC = () => {
                   }`}
                 >
                   <CreditCard className="w-3.5 h-3.5" />
-                  <span>Auksion depozitlari ({deposits.length})</span>
+                  <span>{t.dashboard.auctionDeposits} ({deposits.length})</span>
                 </button>
               </div>
 
@@ -1316,8 +1316,8 @@ export const DashboardPage: React.FC = () => {
                   {walletTransactions.length === 0 ? (
                     <Card className="p-8 text-center space-y-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
                       <Receipt className="w-10 h-10 text-slate-300 mx-auto" />
-                      <p className="text-sm text-slate-500">Hozircha hisob amaliyotlari mavjud emas.</p>
-                      <p className="text-xs text-slate-400">Yutqazilgan auksion depozitlari qaytarilganda shu yerda ko'rinadi.</p>
+                      <p className="text-sm text-slate-500">{t.dashboard.emptyTransactionsTitle}</p>
+                      <p className="text-xs text-slate-400">{t.dashboard.emptyTransactionsDesc}</p>
                     </Card>
                   ) : (
                     walletTransactions.map((tx) => (
@@ -1360,7 +1360,7 @@ export const DashboardPage: React.FC = () => {
                             {tx.is_credit ? '+' : '-'}{formatUZS(tx.amount_tiyin)}
                           </div>
                           <Badge variant={tx.is_credit ? 'success' : 'neutral'} className="text-[10px] mt-1">
-                            {tx.status === 'COMPLETED' ? 'Bajarildi' : tx.status}
+                            {tx.status === 'COMPLETED' ? t.dashboard.completedTx : tx.status}
                           </Badge>
                         </div>
                       </Card>
@@ -1377,10 +1377,10 @@ export const DashboardPage: React.FC = () => {
                       <CreditCard className="w-10 h-10 text-slate-300 mx-auto" />
                       <div>
                         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                          Hozircha pul yechib olinmagan
+                          {t.dashboard.emptyWithdrawalsTitle}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">
-                          Balansingizdagi mablag'ni Uzcard, Humo yoki Visa kartangizga chiqarib oling.
+                          {t.dashboard.emptyWithdrawalsDesc}
                         </p>
                       </div>
                       <Button
@@ -1388,7 +1388,7 @@ export const DashboardPage: React.FC = () => {
                         disabled={(walletBalance?.balance_uzs || 0) < 10000}
                         size="sm"
                       >
-                        Kartaga chiqarib olish
+                        {t.dashboard.withdraw}
                       </Button>
                     </Card>
                   ) : (
@@ -1411,7 +1411,7 @@ export const DashboardPage: React.FC = () => {
                             <div className="text-[11px] text-slate-400 mt-0.5 flex items-center space-x-2">
                               <span>{new Date(w.created_at).toLocaleString()}</span>
                               {w.provider_ref && (
-                                <span className="font-mono text-[10px]">• Chek: {w.provider_ref}</span>
+                                <span className="font-mono text-[10px]">• {t.dashboard.receiptNum}: {w.provider_ref}</span>
                               )}
                             </div>
                           </div>
@@ -1422,7 +1422,7 @@ export const DashboardPage: React.FC = () => {
                             {formatUZS(w.amount_tiyin)}
                           </div>
                           <Badge variant="success" className="text-[10px] mt-1">
-                            {w.status === 'COMPLETED' ? "O'tkazildi" : w.status}
+                            {w.status === 'COMPLETED' ? t.dashboard.sentTx : w.status}
                           </Badge>
                         </div>
                       </Card>
@@ -1437,7 +1437,7 @@ export const DashboardPage: React.FC = () => {
                   {deposits.length === 0 ? (
                     <Card className="p-8 text-center space-y-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
                       <CreditCard className="w-10 h-10 text-slate-300 mx-auto" />
-                      <p className="text-sm text-slate-500">Hozircha auksion depozitlari mavjud emas.</p>
+                      <p className="text-sm text-slate-500">{t.dashboard.depositHistoryDesc}</p>
                     </Card>
                   ) : (
                     deposits.map((dep) => (
@@ -1451,7 +1451,7 @@ export const DashboardPage: React.FC = () => {
                           </div>
                           <div>
                             <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                              Auksion #{dep.auction_id.slice(0, 8)}
+                              {t.dashboard.auctionNum} #{dep.auction_id.slice(0, 8)}
                             </div>
                             <div className="text-[11px] text-slate-400">
                               {new Date(dep.created_at).toLocaleString()}
@@ -1474,11 +1474,11 @@ export const DashboardPage: React.FC = () => {
                             className="mt-1"
                           >
                             {dep.status === 'LOCKED'
-                              ? 'Band qilingan'
+                              ? t.dashboard.lockedStatus
                               : dep.status === 'REFUNDED'
-                              ? 'Hisobga qaytarilgan'
+                              ? t.dashboard.refundedStatus
                               : dep.status === 'PAID'
-                              ? "To'langan"
+                              ? t.dashboard.paidStatus
                               : dep.status}
                           </Badge>
                         </div>
@@ -1495,14 +1495,14 @@ export const DashboardPage: React.FC = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-extrabold tracking-tight">Bildirishnomalar</h1>
+                  <h1 className="text-2xl font-extrabold tracking-tight">{t.dashboard.notificationsTitle}</h1>
                   <p className="text-xs text-slate-500 mt-1">
-                    Hisobingiz va lotlaringizga doir barcha bildirishnomalar
+                    {t.dashboard.notificationsDesc}
                   </p>
                 </div>
                 {notifications.some((n) => !n.is_read) && (
                   <Button variant="outline" size="sm" onClick={handleMarkAllAsRead} className="text-xs">
-                    Barchasini o'qilgan qilish
+                    {t.dashboard.markAllAsRead}
                   </Button>
                 )}
               </div>
@@ -1510,7 +1510,7 @@ export const DashboardPage: React.FC = () => {
               {notifications.length === 0 ? (
                 <Card className="p-8 text-center space-y-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
                   <Bell className="w-10 h-10 text-slate-300 mx-auto" />
-                  <p className="text-sm text-slate-500">Sizda yangi bildirishnomalar mavjud emas.</p>
+                  <p className="text-sm text-slate-500">{t.dashboard.noNotifications}</p>
                 </Card>
               ) : (
                 <div className="space-y-3">
@@ -1551,7 +1551,7 @@ export const DashboardPage: React.FC = () => {
                           onClick={() => handleMarkAsRead(notif.id)}
                           className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold hover:underline shrink-0 ml-3"
                         >
-                          O'qildi
+                          {t.dashboard.markAsRead}
                         </button>
                       )}
                     </Card>
@@ -2001,10 +2001,10 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                    Mahsulot sotish (OLX uslubida lot joylash)
+                    {t.modal.sellProductTitle}
                   </h2>
                   <p className="text-[11px] text-slate-400">
-                    Mahsulot parametrlarini to'ldiring va raqobatli auksionni boshlang
+                    {t.modal.sellProductSubtitle}
                   </p>
                 </div>
               </div>
@@ -2030,23 +2030,23 @@ export const DashboardPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
                     <ImageIcon className="w-4 h-4 text-emerald-600" />
-                    <span>1. Fotosuratlar va Video yuklash</span>
+                    <span>{t.modal.mediaStep}</span>
                     <span className="text-[10px] text-slate-400 font-normal">
-                      ({mediaItems.length} ta yuklandi)
+                      ({mediaItems.length} {t.modal.mediaCount})
                     </span>
                   </label>
                   <span className="text-[10px] text-slate-500">
-                    JPG, PNG, WebP, MP4, WebM (ko'pi bilan 50MB)
+                    {t.modal.mediaFormatHint}
                   </span>
                 </div>
 
                 <label className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 transition-colors rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer bg-white dark:bg-slate-900">
                   <UploadCloud className="w-8 h-8 text-emerald-500 mb-1" />
                   <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                    Suratlarni yuklash uchun bosing yoki shu yerga sudrab tashlang
+                    {t.modal.uploadAreaTitle}
                   </span>
                   <span className="text-[11px] text-slate-400 mt-0.5">
-                    Birinchi yuklangan rasm asosiy muqova bo'ladi. Shuningdek mahsulot videosini ham qo'shishingiz mumkin
+                    {t.modal.uploadAreaSubtitle}
                   </span>
                   <input
                     type="file"
@@ -2089,7 +2089,7 @@ export const DashboardPage: React.FC = () => {
                             />
                             {idx === 0 && (
                               <span className="absolute bottom-1 left-1.5 text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-medium">
-                                Asosiy
+                                {t.modal.mainPhotoBadge}
                               </span>
                             )}
                           </div>
@@ -2112,18 +2112,18 @@ export const DashboardPage: React.FC = () => {
               <div className="space-y-4 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60">
                 <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
                   <Tag className="w-4 h-4 text-emerald-600" />
-                  <span>2. Mahsulot tavsifi va Holati</span>
+                  <span>{t.modal.detailsStep}</span>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="font-semibold text-slate-700 dark:text-slate-300">
-                    E'lon sarlavhasi (Nomi) *
+                    {t.modal.titleLabel}
                   </label>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Masalan: Apple iPhone 15 Pro Max 256GB Natural Titanium (Ochilgan quti)"
+                    placeholder={t.modal.titlePlaceholder}
                     required
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                   />
@@ -2133,7 +2133,7 @@ export const DashboardPage: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Rukn / Toifa *
+                      {t.modal.categoryLabel}
                     </label>
                     <button
                       type="button"
@@ -2141,7 +2141,7 @@ export const DashboardPage: React.FC = () => {
                       className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center hover:underline"
                     >
                       <FolderPlus className="w-3.5 h-3.5 mr-1" />
-                      {showNewCatInput ? "Bekor qilish" : "+ Yangi toifa qo'shish"}
+                      {showNewCatInput ? t.modal.cancelNewCategory : t.modal.addNewCategory}
                     </button>
                   </div>
 
@@ -2151,7 +2151,7 @@ export const DashboardPage: React.FC = () => {
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                   >
                     {categories.length === 0 && (
-                      <option value="">Toifalar yuklanmoqda...</option>
+                      <option value="">{t.common.loading}</option>
                     )}
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -2164,20 +2164,20 @@ export const DashboardPage: React.FC = () => {
                   {showNewCatInput && (
                     <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2">
                       <div className="font-bold text-[11px] text-emerald-800 dark:text-emerald-300">
-                        Yangi toifa qo'shish
+                        {t.modal.addNewCategory}
                       </div>
                       <input
                         type="text"
                         value={newCatName}
                         onChange={(e) => setNewCatName(e.target.value)}
-                        placeholder="Toifa nomi (masalan: Qurilish asboblari)"
+                        placeholder={t.modal.newCategoryNamePlaceholder}
                         className="w-full px-3 py-1.5 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900"
                       />
                       <input
                         type="text"
                         value={newCatDesc}
                         onChange={(e) => setNewCatDesc(e.target.value)}
-                        placeholder="Tavsifi (ixtiyoriy)"
+                        placeholder={t.modal.newCategoryDescPlaceholder}
                         className="w-full px-3 py-1.5 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900"
                       />
                       <div className="flex justify-end pt-1">
@@ -2188,7 +2188,7 @@ export const DashboardPage: React.FC = () => {
                           isLoading={isCreatingCat}
                           className="text-xs py-1"
                         >
-                          Saqlash va biriktirish
+                          {t.modal.saveNewCategory}
                         </Button>
                       </div>
                     </div>
@@ -2198,13 +2198,13 @@ export const DashboardPage: React.FC = () => {
                 {/* OLX-Style Condition Radio Cards */}
                 <div className="space-y-1.5">
                   <label className="font-semibold text-slate-700 dark:text-slate-300">
-                    Mahsulot holati *
+                    {t.modal.conditionLabel}
                   </label>
                   <div className="grid grid-cols-3 gap-2.5">
                     {[
-                      { key: 'NEW', title: 'Yangi', desc: 'Qutida, ochilmagan' },
-                      { key: 'LIKE_NEW', title: 'Ideal / A\'lo', desc: 'Deyarli yangi holatda' },
-                      { key: 'USED', title: 'Ishlatilgan', desc: 'Soz holatda' },
+                      { key: 'NEW', title: t.common.new, desc: 'Qutida / New' },
+                      { key: 'LIKE_NEW', title: t.common.likeNew, desc: 'Ideal / Like New' },
+                      { key: 'USED', title: t.common.used, desc: 'Soz / Used' },
                     ].map((cond) => (
                       <div
                         key={cond.key}
@@ -2224,12 +2224,12 @@ export const DashboardPage: React.FC = () => {
 
                 <div className="space-y-1.5">
                   <label className="font-semibold text-slate-700 dark:text-slate-300">
-                    Mahsulot haqida to'liq ma'lumot (Tavsifi) *
+                    {t.modal.descLabel}
                   </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Mahsulotning barcha parametrlari, kafolati, to'plami (zaryadlovchi, quti), kamchiliklari haqida batafsil yozing..."
+                    placeholder={t.modal.descPlaceholder}
                     rows={3}
                     required
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
@@ -2241,13 +2241,13 @@ export const DashboardPage: React.FC = () => {
               <div className="space-y-4 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60">
                 <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
                   <Gavel className="w-4 h-4 text-emerald-600" />
-                  <span>3. Auksion narxi va Depozit shartlari</span>
+                  <span>{t.modal.financialStep}</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Boshlang'ich narx (so'm) *
+                      {t.modal.startPriceLabel}
                     </label>
                     <input
                       type="number"
@@ -2257,12 +2257,11 @@ export const DashboardPage: React.FC = () => {
                       min={1}
                       className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                     />
-                    <span className="text-[10px] text-slate-400">Savdo ushbu narxdan boshlanadi</span>
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Minimal sotish narxi (so'm) *
+                      {t.modal.reservePriceLabel}
                     </label>
                     <input
                       type="number"
@@ -2272,14 +2271,13 @@ export const DashboardPage: React.FC = () => {
                       min={1}
                       className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                     />
-                    <span className="text-[10px] text-slate-400">Takliflar bunga yetmasa lot sotilmaydi</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Minimal oshirish qadami (so'm) *
+                      {t.modal.minIncrementLabel}
                     </label>
                     <input
                       type="number"
@@ -2293,7 +2291,7 @@ export const DashboardPage: React.FC = () => {
 
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Kafolat depoziti summasi (so'm) *
+                      {t.modal.depositLabel}
                     </label>
                     <input
                       type="number"
@@ -2311,13 +2309,13 @@ export const DashboardPage: React.FC = () => {
               <div className="space-y-4 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60">
                 <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
                   <MapPin className="w-4 h-4 text-emerald-600" />
-                  <span>4. Joylashuv va Yetkazib berish (Hudud)</span>
+                  <span>{t.modal.deliveryStep}</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Shahar / Viloyat *
+                      {t.modal.regionLabel}
                     </label>
                     <select
                       value={region}
@@ -2334,31 +2332,31 @@ export const DashboardPage: React.FC = () => {
 
                   <div className="space-y-1.5">
                     <label className="font-semibold text-slate-700 dark:text-slate-300">
-                      Auksion muddati *
+                      {t.modal.durationLabel}
                     </label>
                     <select
                       value={durationDays}
                       onChange={(e) => setDurationDays(e.target.value)}
                       className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                     >
-                      <option value="1">1 kun (Tezkor 24 soat)</option>
-                      <option value="3">3 kun</option>
-                      <option value="5">5 kun</option>
-                      <option value="7">7 kun (1 hafta)</option>
-                      <option value="14">14 kun (2 hafta)</option>
+                      <option value="1">1 {t.modal.daysUnit} (24h)</option>
+                      <option value="3">3 {t.modal.daysUnit}</option>
+                      <option value="5">5 {t.modal.daysUnit}</option>
+                      <option value="7">7 {t.modal.daysUnit}</option>
+                      <option value="14">14 {t.modal.daysUnit}</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="font-semibold text-slate-700 dark:text-slate-300">
-                    Yetkazib berish shartlari
+                    {t.modal.deliveryInfoLabel}
                   </label>
                   <input
                     type="text"
                     value={deliveryInfo}
                     onChange={(e) => setDeliveryInfo(e.target.value)}
-                    placeholder="Masalan: Pochta, Kuryer yoki xaridor o'zi olib ketadi (Samovyvoz)"
+                    placeholder="Pochta, BTS, Kuryer, Samovyvoz..."
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                   />
                 </div>
@@ -2382,10 +2380,10 @@ export const DashboardPage: React.FC = () => {
                     onClick={() => setIsModalOpen(false)}
                     disabled={isSubmitting}
                   >
-                    Bekor qilish
+                    {t.common.cancel}
                   </Button>
                   <Button type="submit" isLoading={isSubmitting}>
-                    {submitStep || "Auksionni e'lon qilish"}
+                    {submitStep || t.modal.publishBtn}
                   </Button>
                 </div>
               </div>

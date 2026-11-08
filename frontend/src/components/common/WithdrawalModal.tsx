@@ -327,3 +327,4 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
     </div>
   );
 };
+

@@ -14,11 +14,13 @@ import { Badge } from '../components/ui/Badge';
 import { CountdownTimer } from '../components/common/CountdownTimer';
 import { formatUZS } from '../utils/formatters';
 import { useAuth } from '../app/providers';
+import { useLanguage } from '../context/LanguageContext';
 import { auctionsService, getMediaUrl } from '../services/api';
 import { Auction } from '../types';
 
 export const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [homeSearch, setHomeSearch] = useState('');
   const [activeAuctions, setActiveAuctions] = useState<Auction[]>([]);
   const navigate = useNavigate();
@@ -76,18 +78,18 @@ export const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold mb-6 shadow-sm">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>O'zbekistondagi 1-raqamli kafolatli auksion maydoni</span>
+            <span>{t.home.badge}</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-4xl mx-auto leading-tight sm:leading-tight">
-            Shaffof raqobat. Haqiqiy narxlar.{' '}
+            {t.home.heroTitle1}{' '}
             <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              Kafolatlangan xarid.
+              {t.home.heroTitle2}
             </span>
           </h1>
 
           <p className="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            AuctionHub orqali mahsulotingizni eng yuqori narxda soting yoki orzuingizdagi buyumni arzonroq narxda yutib oling.
+            {t.home.heroDesc}
           </p>
 
           {/* Search Bar */}
@@ -108,12 +110,12 @@ export const HomePage: React.FC = () => {
                 type="text"
                 value={homeSearch}
                 onChange={(e) => setHomeSearch(e.target.value)}
-                placeholder="Qidiruv: iPhone 15, Tracker, MacBook, Noutbuk..."
+                placeholder={t.home.searchPlaceholder}
                 className="w-full bg-transparent border-none text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0"
               />
             </div>
             <Button type="submit" size="md" className="rounded-xl px-5 font-semibold">
-              Qidirish
+              {t.common.search}
             </Button>
           </form>
 
@@ -122,12 +124,12 @@ export const HomePage: React.FC = () => {
             <Link to="/dashboard">
               <Button size="lg" className="w-full sm:w-auto shadow-lg shadow-emerald-500/25 font-bold">
                 <Gavel className="w-5 h-5 mr-2" />
-                Auksionlarni ko'rish
+                {t.home.exploreBtn}
               </Button>
             </Link>
             <Link to={isAuthenticated ? '/dashboard?openModal=true' : '/register'}>
               <Button variant="outline" size="lg" className="w-full sm:w-auto font-bold">
-                Sotuvchi bo'lish
+                {t.home.sellBtn}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -137,19 +139,19 @@ export const HomePage: React.FC = () => {
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600">5 000+</div>
-              <div className="text-xs sm:text-sm text-slate-500 mt-1">Muvaffaqiyatli auksion</div>
+              <div className="text-xs sm:text-sm text-slate-500 mt-1">{t.home.step1Title.replace('1. ', '')}</div>
             </div>
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600">100%</div>
-              <div className="text-xs sm:text-sm text-slate-500 mt-1">Qaytariluvchi depozit</div>
+              <div className="text-xs sm:text-sm text-slate-500 mt-1">{t.dashboard.lockedDeposit}</div>
             </div>
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600">0.1 sek</div>
-              <div className="text-xs sm:text-sm text-slate-500 mt-1">Jonli takliflar tezligi</div>
+              <div className="text-xs sm:text-sm text-slate-500 mt-1">{t.auctions.liveBadge}</div>
             </div>
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600">24/7</div>
-              <div className="text-xs sm:text-sm text-slate-500 mt-1">Eksklyuziv moderatsiya</div>
+              <div className="text-xs sm:text-sm text-slate-500 mt-1">{t.common.verified}</div>
             </div>
           </div>
         </div>
@@ -162,18 +164,18 @@ export const HomePage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Flame className="w-5 h-5 text-amber-500" />
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Qizg'in auksionlar
+                {t.home.featuredTitle}
               </h2>
             </div>
             <p className="text-sm text-slate-500 mt-1">
-              Eng ko'p taklif tushayotgan va tez orada yakunlanuvchi savdolar
+              {t.home.featuredSubtitle}
             </p>
           </div>
           <Link
             to="/dashboard"
             className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center transition-colors"
           >
-            Hammasini ko'rish <ArrowRight className="w-4 h-4 ml-1" />
+            {t.home.viewAllAuctions} <ArrowRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
 
@@ -196,7 +198,7 @@ export const HomePage: React.FC = () => {
                       </div>
                       <div className="absolute top-3 right-3">
                         <Badge variant="neutral" className="bg-black/60 text-white border-none backdrop-blur-md">
-                          {item.product?.condition === 'NEW' ? 'Yangi' : "A'lo holatda"}
+                          {item.product?.condition === 'NEW' ? t.common.new : t.common.likeNew}
                         </Badge>
                       </div>
                     </div>
@@ -208,13 +210,13 @@ export const HomePage: React.FC = () => {
                         </h3>
                         <div className="mt-4 flex items-center justify-between">
                           <div>
-                            <div className="text-xs text-slate-500 font-medium">Joriy eng yuqori narx:</div>
+                            <div className="text-xs text-slate-500 font-medium">{t.dashboard.currentBid}:</div>
                             <div className="text-xl font-extrabold text-emerald-600">
                               {formatUZS(item.current_highest_bid || item.starting_price)}
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-xs text-slate-500 font-medium">Depozit:</div>
+                            <div className="text-xs text-slate-500 font-medium">{t.dashboard.depositAmount}:</div>
                             <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                               {formatUZS(item.deposit_amount)}
                             </div>
@@ -224,10 +226,10 @@ export const HomePage: React.FC = () => {
 
                       <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <span className="text-xs text-slate-500">
-                          <strong className="text-slate-900 dark:text-slate-200">{item.participant_count || 0}</strong> ishtirokchi
+                          <strong className="text-slate-900 dark:text-slate-200">{item.participant_count || 0}</strong> {t.common.participants}
                         </span>
                         <Link to={`/auctions/${item.id}`}>
-                          <Button size="sm">Taklif berish</Button>
+                          <Button size="sm">{t.auctions.bidBtn}</Button>
                         </Link>
                       </div>
                     </div>
@@ -262,13 +264,13 @@ export const HomePage: React.FC = () => {
                       </h3>
                       <div className="mt-4 flex items-center justify-between">
                         <div>
-                          <div className="text-xs text-slate-500 font-medium">Joriy eng yuqori narx:</div>
+                          <div className="text-xs text-slate-500 font-medium">{t.dashboard.currentBid}:</div>
                           <div className="text-xl font-extrabold text-emerald-600">
                             {formatUZS(item.currentHighestBid)}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-slate-500 font-medium">Depozit:</div>
+                          <div className="text-xs text-slate-500 font-medium">{t.dashboard.depositAmount}:</div>
                           <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                             {formatUZS(item.depositAmount)}
                           </div>
@@ -278,10 +280,10 @@ export const HomePage: React.FC = () => {
 
                     <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                       <span className="text-xs text-slate-500">
-                        <strong className="text-slate-900 dark:text-slate-200">{item.participants}</strong> ishtirokchi
+                        <strong className="text-slate-900 dark:text-slate-200">{item.participants}</strong> {t.common.participants}
                       </span>
                       <Link to={`/auctions/${item.id}`}>
-                        <Button size="sm">Taklif berish</Button>
+                        <Button size="sm">{t.auctions.bidBtn}</Button>
                       </Link>
                     </div>
                   </div>
@@ -293,70 +295,69 @@ export const HomePage: React.FC = () => {
       {/* How it works */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-slate-100/60 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <Badge variant="info" className="mb-3">Oddiy va Ishonchli</Badge>
-          <h2 className="text-3xl font-extrabold">Qanday ishlaydi?</h2>
+          <Badge variant="info" className="mb-3">{t.common.appName}</Badge>
+          <h2 className="text-3xl font-extrabold">{t.home.howItWorksTitle}</h2>
           <p className="text-slate-500 text-sm mt-2">
-            AuctionHub tizimida qatnashish 3 ta xavfsiz qadamdan iborat
+            {t.home.howItWorksSubtitle}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Link to="/how-it-works" className="group block">
-            <div className="text-center p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-emerald-500/50 transition-all h-full flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-xl mb-4 group-hover:scale-110 transition-transform">
-                  1
-                </div>
-                <h3 className="font-bold text-lg mb-2 text-slate-900 dark:text-white group-hover:text-emerald-600">
-                  Depozit To'lash
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Qiziqqan auksioningizga qaytariladigan kafolat depozitini to'laysiz.
-                </p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center flex flex-col justify-between">
+            <div>
+              <div className="w-10 h-10 mx-auto rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-lg mb-3">
+                1
               </div>
-              <div className="mt-4 text-xs font-semibold text-emerald-600 flex items-center justify-center">
-                Batafsil o'qish <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </div>
+              <h3 className="font-bold text-base mb-1.5 text-slate-900 dark:text-white">
+                {t.home.step1Title}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {t.home.step1Desc}
+              </p>
             </div>
-          </Link>
+          </div>
 
-          <Link to="/dashboard" className="group block">
-            <div className="text-center p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-emerald-500/50 transition-all h-full flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-xl mb-4 group-hover:scale-110 transition-transform">
-                  2
-                </div>
-                <h3 className="font-bold text-lg mb-2 text-slate-900 dark:text-white group-hover:text-emerald-600">
-                  Jonli Taklif Berish
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Boshqa ishtirokchilar bilan real-vaqt rejimida (WebSocket) raqobatlashasiz.
-                </p>
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center flex flex-col justify-between">
+            <div>
+              <div className="w-10 h-10 mx-auto rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-lg mb-3">
+                2
               </div>
-              <div className="mt-4 text-xs font-semibold text-emerald-600 flex items-center justify-center">
-                Savdolarni ko'rish <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </div>
+              <h3 className="font-bold text-base mb-1.5 text-slate-900 dark:text-white">
+                {t.home.step2Title}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {t.home.step2Desc}
+              </p>
             </div>
-          </Link>
+          </div>
 
-          <Link to="/how-it-works" className="group block">
-            <div className="text-center p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-emerald-500/50 transition-all h-full flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-xl mb-4 group-hover:scale-110 transition-transform">
-                  3
-                </div>
-                <h3 className="font-bold text-lg mb-2 text-slate-900 dark:text-white group-hover:text-emerald-600">
-                  Yutuq yoki Qaytarish
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Yutsangiz buyumni xarid qilasiz, yutqazgan taqdiringizda depozitingiz darhol to'liq qaytariladi.
-                </p>
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center flex flex-col justify-between">
+            <div>
+              <div className="w-10 h-10 mx-auto rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-lg mb-3">
+                3
               </div>
-              <div className="mt-4 text-xs font-semibold text-emerald-600 flex items-center justify-center">
-                Kafolatlar bilan tanishish <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </div>
+              <h3 className="font-bold text-base mb-1.5 text-slate-900 dark:text-white">
+                {t.home.step3Title}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {t.home.step3Desc}
+              </p>
             </div>
-          </Link>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center flex flex-col justify-between">
+            <div>
+              <div className="w-10 h-10 mx-auto rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-lg mb-3">
+                4
+              </div>
+              <h3 className="font-bold text-base mb-1.5 text-slate-900 dark:text-white">
+                {t.home.step4Title}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {t.home.step4Desc}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     </div>

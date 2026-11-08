@@ -93,3 +93,4 @@ async def test_wallet_balance_and_withdrawals(client: AsyncClient, db_session):
     assert tx_res.status_code == 200
     tx_items = tx_res.json()
     assert len(tx_items) >= 2  # 1 credit + 1 debit
+
