@@ -16,6 +16,8 @@ from app.modules.users.router import router as users_router
 from app.modules.categories.router import router as categories_router
 from app.modules.products.router import router as products_router
 from app.modules.auctions.router import router as auctions_router
+from app.modules.participants.router import router as participants_router
+from app.modules.bidding.router import router as bidding_router
 
 
 @asynccontextmanager
@@ -69,6 +71,8 @@ app.include_router(users_router, prefix=settings.API_V1_STR)
 app.include_router(categories_router, prefix=settings.API_V1_STR)
 app.include_router(products_router, prefix=settings.API_V1_STR)
 app.include_router(auctions_router, prefix=settings.API_V1_STR)
+app.include_router(participants_router, prefix=settings.API_V1_STR)
+app.include_router(bidding_router, prefix=settings.API_V1_STR)
 
 
 @app.get(
