@@ -436,6 +436,7 @@ export const DashboardPage: React.FC = () => {
       // Cleanup previews
       mediaItems.forEach((m) => URL.revokeObjectURL(m.previewUrl));
       setMediaItems([]);
+      await loadUserData();
       setIsModalOpen(false);
       navigate(`/auctions/${auction.id}`);
     } catch (err: any) {
