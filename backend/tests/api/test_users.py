@@ -41,3 +41,4 @@ async def test_user_profile_get_and_update(client: AsyncClient):
     public_res = await client.get(f"/api/v1/users/{user_id}")
     assert public_res.status_code == 200
     assert public_res.json()["profile"]["full_name"] == "Sohibqiron Amir Temur"
+

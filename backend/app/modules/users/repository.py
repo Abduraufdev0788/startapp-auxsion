@@ -113,3 +113,4 @@ class UserRepository:
 
         await self.db.flush()
         return user
+

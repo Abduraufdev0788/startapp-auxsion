@@ -56,3 +56,4 @@ class AuthRepository:
             .values(is_revoked=True)
         )
         await self.db.execute(stmt)
+

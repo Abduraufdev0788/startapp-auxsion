@@ -40,3 +40,4 @@ class UserService:
         )
         await self.db.commit()
         return updated_user
+

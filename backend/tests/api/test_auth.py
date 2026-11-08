@@ -123,3 +123,4 @@ async def test_auth_me_protected_endpoint(client: AsyncClient):
     assert data["phone"] == "+998971112233"
     assert data["full_name"] == "Ibn Sino"
     assert "USER" in data["roles"]
+

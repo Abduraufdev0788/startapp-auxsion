@@ -102,3 +102,4 @@ async def get_me(
         is_active=current_user.is_active,
         is_verified=current_user.is_verified,
     )
+

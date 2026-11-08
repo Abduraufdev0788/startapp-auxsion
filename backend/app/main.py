@@ -13,6 +13,9 @@ from app.database.session import engine
 from app.websocket.router import router as ws_router
 from app.modules.auth.router import router as auth_router
 from app.modules.users.router import router as users_router
+from app.modules.categories.router import router as categories_router
+from app.modules.products.router import router as products_router
+from app.modules.auctions.router import router as auctions_router
 
 
 @asynccontextmanager
@@ -63,6 +66,9 @@ if os.path.exists(settings.LOCAL_STORAGE_PATH):
 app.include_router(ws_router, prefix=settings.API_V1_STR, tags=["Real-time WebSocket"])
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(users_router, prefix=settings.API_V1_STR)
+app.include_router(categories_router, prefix=settings.API_V1_STR)
+app.include_router(products_router, prefix=settings.API_V1_STR)
+app.include_router(auctions_router, prefix=settings.API_V1_STR)
 
 
 @app.get(

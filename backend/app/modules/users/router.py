@@ -83,3 +83,4 @@ async def get_user_by_id(
         profile=UserProfileResponse.model_validate(user.profile) if user.profile else None,
         roles=[r.name for r in user.roles] if user.roles else [],
     )
+
