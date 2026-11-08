@@ -53,6 +53,24 @@ class ParticipantService:
             provider_ref=f"sandbox_dep_{uuid.uuid4().hex[:10]}",
         )
 
+        # Check if user has available wallet balance; if so, deduct from wallet
+        try:
+            from app.modules.escrow.service import LedgerService
+            ledger = LedgerService(self.db)
+            account = await ledger.repo.get_or_create_account(account_type="USER_WALLET", user_id=user_id)
+            if account.balance >= auction.deposit_amount:
+                await ledger.record_transfer(
+                    transaction_id=deposit.id,
+                    from_account_type="USER_WALLET",
+                    to_account_type="PLATFORM_ESCROW",
+                    amount_tiyin=auction.deposit_amount,
+                    description=f"Participation deposit paid from wallet for auction {auction.id}",
+                    from_user_id=user_id,
+                )
+                deposit.provider_ref = f"wallet_dep_{uuid.uuid4().hex[:10]}"
+        except Exception:
+            pass
+
         # 5. Register participant
         participant = await self.repo.create_participant(
             auction_id=auction_id,

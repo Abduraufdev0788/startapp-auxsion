@@ -32,6 +32,10 @@ import {
   Sun,
   Moon,
   Globe,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Receipt,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -41,8 +45,10 @@ import { useAuth } from '../app/providers';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { CountdownTimer } from '../components/common/CountdownTimer';
+import { WithdrawalModal } from '../components/common/WithdrawalModal';
 import {
   depositsService,
+  paymentsService,
   notificationsService,
   categoriesService,
   productsService,
@@ -52,7 +58,15 @@ import {
   getMediaUrl,
   isVideoMedia,
 } from '../services/api';
-import { Deposit, Notification, Category, Auction } from '../types';
+import {
+  Deposit,
+  Notification,
+  Category,
+  Auction,
+  WalletBalance,
+  Withdrawal,
+  WalletTransaction,
+} from '../types';
 
 type DashboardSection =
   | 'market'
@@ -106,6 +120,13 @@ export const DashboardPage: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+
+  // Wallet & Financial State
+  const [walletBalance, setWalletBalance] = useState<WalletBalance | null>(null);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [walletTransactions, setWalletTransactions] = useState<WalletTransaction[]>([]);
+  const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState<boolean>(false);
+  const [financeSubTab, setFinanceSubTab] = useState<'transactions' | 'withdrawals' | 'deposits'>('transactions');
 
   // In-Dashboard Single Search & Filters
   const initialSearchParam = searchParams.get('search') || '';
@@ -229,6 +250,9 @@ export const DashboardPage: React.FC = () => {
         depList,
         notifList,
         catList,
+        walletRes,
+        withdrawalList,
+        txList,
       ] = await Promise.all([
         auctionsService.getMyCreated().catch(() => []),
         auctionsService.getMyParticipating().catch(() => []),
@@ -239,6 +263,9 @@ export const DashboardPage: React.FC = () => {
         depositsService.getMyDeposits().catch(() => []),
         notificationsService.list().catch(() => []),
         categoriesService.list().catch(() => []),
+        paymentsService.getWalletBalance().catch(() => null),
+        paymentsService.getWithdrawals().catch(() => []),
+        paymentsService.getWalletTransactions().catch(() => []),
       ]);
 
       setCreatedAuctions(createdList);
@@ -250,6 +277,11 @@ export const DashboardPage: React.FC = () => {
       setDeposits(depList);
       setNotifications(notifList);
       setCategories(catList);
+      if (walletRes) {
+        setWalletBalance(walletRes);
+      }
+      setWithdrawals(withdrawalList);
+      setWalletTransactions(txList);
       if (catList.length > 0 && !categoryId) {
         setCategoryId(catList[0].id);
       }
@@ -797,16 +829,35 @@ export const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Balance Overview Widget */}
-          <Card className="p-4 bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl shadow-lg shadow-emerald-600/10 space-y-2">
-            <div className="flex items-center justify-between text-xs text-emerald-100">
-              <span>Band qilingan depozit</span>
-              <Shield className="w-4 h-4 text-emerald-200" />
+          {/* Balance & Wallet Widget */}
+          <Card className="p-4 bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-800 text-white rounded-3xl shadow-xl shadow-emerald-600/15 space-y-3.5 border-none">
+            <div className="flex items-center justify-between text-xs text-emerald-100/90 font-medium">
+              <span className="flex items-center space-x-1.5">
+                <Wallet className="w-3.5 h-3.5" />
+                <span>Mening hisobim (Hamyon)</span>
+              </span>
+              <ShieldCheck className="w-4 h-4 text-emerald-200" />
             </div>
-            <div className="text-xl font-extrabold">{formatUZS(lockedDeposits)}</div>
-            <p className="text-[11px] text-emerald-100/90 leading-relaxed">
-              Yutqazilgan auksionlarda kafolat depoziti 100% qaytariladi.
-            </p>
+
+            <div>
+              <div className="text-2xl font-black tracking-tight">
+                {formatUZS(walletBalance?.balance_tiyin || 0)}
+              </div>
+              <div className="text-[11px] text-emerald-100/80 mt-1 flex items-center justify-between">
+                <span>Band depozitlar:</span>
+                <span className="font-bold">
+                  {formatUZS(walletBalance?.locked_deposits_tiyin || lockedDeposits)}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsWithdrawalModalOpen(true)}
+              className="w-full py-2 px-3 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 active:scale-[0.98] transition-all font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md"
+            >
+              <ArrowUpRight className="w-4 h-4 text-emerald-600" />
+              <span>Pulni chiqarib olish</span>
+            </button>
           </Card>
         </aside>
 
@@ -1162,67 +1213,278 @@ export const DashboardPage: React.FC = () => {
             </div>
           )}
 
-          {/* ================= 2. DEPOSITS & REFUNDS VIEW ================= */}
+          {/* ================= 2. DEPOSITS & WALLET VIEW ================= */}
           {activeSection === 'deposits' && (
             <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-extrabold tracking-tight">Kafolat depozitlari</h1>
-                <p className="text-xs text-slate-500 mt-1">
-                  Auksionlarda ishtirok etish uchun to'langan va qaytarilgan kafolat mablag'lari
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-extrabold tracking-tight">Shaxsiy hisob va Kafolat depozitlari</h1>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Yutqazilgan auksion depozitlari, hamyon balansi va bank kartasiga chiqarib olishlar
+                  </p>
+                </div>
+
+                <Button
+                  onClick={() => setIsWithdrawalModalOpen(true)}
+                  disabled={(walletBalance?.balance_uzs || 0) < 10000}
+                  className="font-bold shrink-0 shadow-lg shadow-emerald-600/10"
+                >
+                  <ArrowUpRight className="w-4 h-4 mr-1.5" />
+                  Pulni chiqarib olish
+                </Button>
               </div>
 
-              {deposits.length === 0 ? (
-                <Card className="p-8 text-center space-y-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
-                  <CreditCard className="w-10 h-10 text-slate-300 mx-auto" />
-                  <p className="text-sm text-slate-500">Hozircha hech qanday depozit operatsiyalari mavjud emas.</p>
+              {/* 2 Top Overview Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Available Balance Card */}
+                <Card className="p-5 bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-3xl shadow-xl shadow-emerald-600/10 space-y-3">
+                  <div className="flex items-center justify-between text-xs text-emerald-100 font-medium">
+                    <span className="flex items-center space-x-2">
+                      <Wallet className="w-4 h-4" />
+                      <span>Mening hamyonim (Mavjud balans)</span>
+                    </span>
+                    <Badge className="bg-white/20 text-white border-none text-[10px]">Yechib olish mumkin</Badge>
+                  </div>
+                  <div className="text-3xl font-black tracking-tight">
+                    {formatUZS(walletBalance?.balance_tiyin || 0)}
+                  </div>
+                  <p className="text-[11px] text-emerald-100/90 leading-relaxed">
+                    Yutqazilgan auksionlarning barcha kafolat depozitlari to'g'ridan-to'g'ri shu yerga qaytadi.
+                  </p>
                 </Card>
-              ) : (
-                <div className="space-y-3">
-                  {deposits.map((dep) => (
-                    <Card
-                      key={dep.id}
-                      className="p-4 flex items-center justify-between bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl"
-                    >
-                      <div className="flex items-center space-x-3.5">
-                        <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 flex items-center justify-center">
-                          <CreditCard className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                            Auksion #{dep.auction_id.slice(0, 8)}
-                          </div>
-                          <div className="text-[11px] text-slate-400">
-                            {new Date(dep.created_at).toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="text-right">
-                        <div className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                          {formatUZS(dep.amount)}
-                        </div>
-                        <Badge
-                          variant={
-                            dep.status === 'REFUNDED'
-                              ? 'neutral'
-                              : dep.status === 'LOCKED' || dep.status === 'PAID'
-                              ? 'warning'
-                              : 'danger'
-                          }
-                          className="mt-1"
-                        >
-                          {dep.status === 'LOCKED'
-                            ? 'Band qilingan'
-                            : dep.status === 'REFUNDED'
-                            ? 'Qaytarilgan'
-                            : dep.status === 'PAID'
-                            ? 'To\'langan'
-                            : dep.status}
-                        </Badge>
-                      </div>
+                {/* Locked Deposits Card */}
+                <Card className="p-5 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl shadow-xl space-y-3 border-slate-800">
+                  <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
+                    <span className="flex items-center space-x-2">
+                      <Shield className="w-4 h-4 text-amber-400" />
+                      <span>Faol auksionlarda band depozitlar</span>
+                    </span>
+                    <Badge className="bg-amber-500/20 text-amber-300 border-none text-[10px]">Muzlatilgan</Badge>
+                  </div>
+                  <div className="text-3xl font-black tracking-tight text-amber-400">
+                    {formatUZS(walletBalance?.locked_deposits_tiyin || lockedDeposits)}
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Auksion yakunlangach g'olib bo'lmagan taqdiringizda mablag' 100% hamyon balansingizga qaytadi.
+                  </p>
+                </Card>
+              </div>
+
+              {/* Sub Navigation Tabs */}
+              <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                <button
+                  onClick={() => setFinanceSubTab('transactions')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                    financeSubTab === 'transactions'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <Receipt className="w-3.5 h-3.5" />
+                  <span>Hisob amaliyotlari ({walletTransactions.length})</span>
+                </button>
+
+                <button
+                  onClick={() => setFinanceSubTab('withdrawals')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                    financeSubTab === 'withdrawals'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <span>Kartaga chiqarib olishlar ({withdrawals.length})</span>
+                </button>
+
+                <button
+                  onClick={() => setFinanceSubTab('deposits')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                    financeSubTab === 'deposits'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Auksion depozitlari ({deposits.length})</span>
+                </button>
+              </div>
+
+              {/* TAB 1: Wallet Transactions */}
+              {financeSubTab === 'transactions' && (
+                <div className="space-y-3">
+                  {walletTransactions.length === 0 ? (
+                    <Card className="p-8 text-center space-y-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
+                      <Receipt className="w-10 h-10 text-slate-300 mx-auto" />
+                      <p className="text-sm text-slate-500">Hozircha hisob amaliyotlari mavjud emas.</p>
+                      <p className="text-xs text-slate-400">Yutqazilgan auksion depozitlari qaytarilganda shu yerda ko'rinadi.</p>
                     </Card>
-                  ))}
+                  ) : (
+                    walletTransactions.map((tx) => (
+                      <Card
+                        key={tx.id}
+                        className="p-4 flex items-center justify-between bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl hover:border-slate-300 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3.5">
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                              tx.is_credit
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600'
+                                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600'
+                            }`}
+                          >
+                            {tx.is_credit ? (
+                              <ArrowDownLeft className="w-5 h-5" />
+                            ) : (
+                              <ArrowUpRight className="w-5 h-5" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                              {tx.description}
+                            </div>
+                            <div className="text-[11px] text-slate-400 mt-0.5">
+                              {new Date(tx.created_at).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div
+                            className={`font-extrabold text-sm ${
+                              tx.is_credit
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-slate-900 dark:text-slate-100'
+                            }`}
+                          >
+                            {tx.is_credit ? '+' : '-'}{formatUZS(tx.amount_tiyin)}
+                          </div>
+                          <Badge variant={tx.is_credit ? 'success' : 'neutral'} className="text-[10px] mt-1">
+                            {tx.status === 'COMPLETED' ? 'Bajarildi' : tx.status}
+                          </Badge>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* TAB 2: Withdrawals */}
+              {financeSubTab === 'withdrawals' && (
+                <div className="space-y-3">
+                  {withdrawals.length === 0 ? (
+                    <Card className="p-8 text-center space-y-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
+                      <CreditCard className="w-10 h-10 text-slate-300 mx-auto" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                          Hozircha pul yechib olinmagan
+                        </p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          Balansingizdagi mablag'ni Uzcard, Humo yoki Visa kartangizga chiqarib oling.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => setIsWithdrawalModalOpen(true)}
+                        disabled={(walletBalance?.balance_uzs || 0) < 10000}
+                        size="sm"
+                      >
+                        Kartaga chiqarib olish
+                      </Button>
+                    </Card>
+                  ) : (
+                    withdrawals.map((w) => (
+                      <Card
+                        key={w.id}
+                        className="p-4 flex items-center justify-between bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl"
+                      >
+                        <div className="flex items-center space-x-3.5">
+                          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold text-xs">
+                            <CreditCard className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                              <span>{w.card_number_masked}</span>
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                {w.card_type}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-400 mt-0.5 flex items-center space-x-2">
+                              <span>{new Date(w.created_at).toLocaleString()}</span>
+                              {w.provider_ref && (
+                                <span className="font-mono text-[10px]">• Chek: {w.provider_ref}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
+                            {formatUZS(w.amount_tiyin)}
+                          </div>
+                          <Badge variant="success" className="text-[10px] mt-1">
+                            {w.status === 'COMPLETED' ? "O'tkazildi" : w.status}
+                          </Badge>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* TAB 3: Auction Deposits */}
+              {financeSubTab === 'deposits' && (
+                <div className="space-y-3">
+                  {deposits.length === 0 ? (
+                    <Card className="p-8 text-center space-y-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl">
+                      <CreditCard className="w-10 h-10 text-slate-300 mx-auto" />
+                      <p className="text-sm text-slate-500">Hozircha auksion depozitlari mavjud emas.</p>
+                    </Card>
+                  ) : (
+                    deposits.map((dep) => (
+                      <Card
+                        key={dep.id}
+                        className="p-4 flex items-center justify-between bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl"
+                      >
+                        <div className="flex items-center space-x-3.5">
+                          <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 flex items-center justify-center">
+                            <CreditCard className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                              Auksion #{dep.auction_id.slice(0, 8)}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              {new Date(dep.created_at).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                            {formatUZS(dep.amount)}
+                          </div>
+                          <Badge
+                            variant={
+                              dep.status === 'REFUNDED'
+                                ? 'neutral'
+                                : dep.status === 'LOCKED' || dep.status === 'PAID'
+                                ? 'warning'
+                                : 'danger'
+                            }
+                            className="mt-1"
+                          >
+                            {dep.status === 'LOCKED'
+                              ? 'Band qilingan'
+                              : dep.status === 'REFUNDED'
+                              ? 'Hisobga qaytarilgan'
+                              : dep.status === 'PAID'
+                              ? "To'langan"
+                              : dep.status}
+                          </Badge>
+                        </div>
+                      </Card>
+                    ))
+                  )}
                 </div>
               )}
             </div>
@@ -2131,6 +2393,15 @@ export const DashboardPage: React.FC = () => {
           </Card>
         </div>
       )}
+      {/* ================= WITHDRAWAL MODAL (Pulni chiqarib olish) ================= */}
+      <WithdrawalModal
+        isOpen={isWithdrawalModalOpen}
+        onClose={() => setIsWithdrawalModalOpen(false)}
+        availableBalanceUzs={walletBalance?.balance_uzs || 0}
+        onSuccess={() => {
+          loadUserData();
+        }}
+      />
     </div>
   );
 };

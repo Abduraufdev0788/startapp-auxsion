@@ -9,6 +9,9 @@ import {
   PaginatedResponse,
   ParticipationStatus,
   Product,
+  WalletBalance,
+  Withdrawal,
+  WalletTransaction,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
@@ -198,6 +201,32 @@ export const participantsService = {
 export const depositsService = {
   async getMyDeposits(): Promise<Deposit[]> {
     const res = await apiClient.get<Deposit[]>('/deposits/my');
+    return res.data;
+  },
+};
+
+export const paymentsService = {
+  async getWalletBalance(): Promise<WalletBalance> {
+    const res = await apiClient.get<WalletBalance>('/payments/wallet');
+    return res.data;
+  },
+
+  async withdraw(data: {
+    amount_uzs: number;
+    card_number: string;
+    card_holder?: string;
+  }): Promise<Withdrawal> {
+    const res = await apiClient.post<Withdrawal>('/payments/withdraw', data);
+    return res.data;
+  },
+
+  async getWithdrawals(): Promise<Withdrawal[]> {
+    const res = await apiClient.get<Withdrawal[]>('/payments/withdrawals');
+    return res.data;
+  },
+
+  async getWalletTransactions(): Promise<WalletTransaction[]> {
+    const res = await apiClient.get<WalletTransaction[]>('/payments/wallet/transactions');
     return res.data;
   },
 };

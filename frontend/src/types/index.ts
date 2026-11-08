@@ -116,3 +116,38 @@ export interface PaginatedResponse<T> {
   page_size: number;
   pages: number;
 }
+
+export interface WalletBalance {
+  balance_tiyin: number;
+  balance_uzs: number;
+  formatted_balance: string;
+  locked_deposits_tiyin: number;
+  locked_deposits_uzs: number;
+  formatted_locked: string;
+  currency: string;
+}
+
+export interface Withdrawal {
+  id: string;
+  amount_tiyin: number;
+  amount_uzs: number;
+  formatted_amount: string;
+  card_number_masked: string;
+  card_holder?: string;
+  card_type: string;
+  status: string;
+  provider_ref?: string;
+  created_at: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  type: string;
+  amount_tiyin: number;
+  amount_uzs: number;
+  formatted_amount: string;
+  description: string;
+  created_at: string;
+  status: string;
+  is_credit: boolean;
+}

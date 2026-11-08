@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Gavel, Search, User, PlusCircle, LogOut, Bell, Shield, X, Sun, Moon, Globe } from 'lucide-react';
+import { Gavel, Search, User, PlusCircle, LogOut, Bell, Shield, X, Sun, Moon, Globe, Wallet } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../app/providers';
 import { useTheme } from '../../context/ThemeContext';
@@ -157,6 +157,15 @@ export const Navbar: React.FC = () => {
                   </Button>
                 </Link>
               )}
+
+              <Link
+                to="/dashboard?section=deposits"
+                title="Mening hisobim va balans"
+                className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+              >
+                <Wallet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Hisobim</span>
+              </Link>
 
               <Link
                 to="/dashboard?section=notifications"

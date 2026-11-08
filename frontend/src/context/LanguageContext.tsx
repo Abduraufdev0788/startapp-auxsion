@@ -62,3 +62,4 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     </LanguageContext.Provider>
   );
 };
+

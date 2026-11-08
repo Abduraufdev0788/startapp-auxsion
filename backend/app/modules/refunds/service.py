@@ -78,8 +78,50 @@ class RefundService:
             to_user_id=deposit.user_id,
         )
 
+        # 7. Create in-app notification for the user
+        from app.modules.notifications.repository import NotificationRepository
+        from app.utils.money import format_uzs
+        notif_repo = NotificationRepository(self.db)
+        await notif_repo.create_notification(
+            user_id=deposit.user_id,
+            title="Kafolat depoziti hisobingizga qaytarildi",
+            message=f"Auksion yakunlandi. {format_uzs(deposit.amount)} kafolat depoziti sizning shaxsiy balansingizga qaytarildi. Istalgan vaqtda kartangizga yechib olishingiz mumkin.",
+            type="DEPOSIT_REFUND",
+        )
+
         await self.db.commit()
         return refund
+
+    async def process_auction_refunds(
+        self, auction_id: uuid.UUID, winner_id: Optional[uuid.UUID] = None
+    ) -> List[RefundModel]:
+        """Automatically refund participation deposits to internal balance for non-winning participants."""
+        from sqlalchemy import select
+        from app.modules.deposits.models import DepositModel
+
+        stmt = (
+            select(DepositModel)
+            .where(
+                DepositModel.auction_id == auction_id,
+                DepositModel.status.in_([DepositStatus.LOCKED.value, DepositStatus.PAID.value]),
+            )
+        )
+        if winner_id:
+            stmt = stmt.where(DepositModel.user_id != winner_id)
+
+        res = await self.db.execute(stmt)
+        deposits = res.scalars().all()
+
+        refunds = []
+        for dep in deposits:
+            idem_key = f"refund_auc_{auction_id}_{dep.id}"
+            ref = await self.process_refund(
+                deposit_id=dep.id,
+                idempotency_key=idem_key,
+                reason="Auksion yakunlandi, kafolat depoziti hisobga qaytarildi",
+            )
+            refunds.append(ref)
+        return refunds
 
     async def list_my_refunds(self, user_id: uuid.UUID) -> List[RefundModel]:
         return await self.repo.list_by_user(user_id)

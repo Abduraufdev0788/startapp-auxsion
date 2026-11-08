@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.constants import AuctionStatus, ParticipantStatus
+from app.core.logging import logger
 from app.core.exceptions import (
     AuctionNotActiveException,
     DepositRequiredException,
@@ -214,6 +215,17 @@ class BiddingService:
             payload=json.dumps(ws_data),
         )
         await self.db.commit()
+
+        # Automatically credit refunded deposits to non-winning participants' balances
+        try:
+            from app.modules.refunds.service import RefundService
+            refund_service = RefundService(self.db)
+            await refund_service.process_auction_refunds(
+                auction_id=auction.id,
+                winner_id=auction.highest_bidder_id if auction.status == AuctionStatus.COMPLETED.value else None,
+            )
+        except Exception as e:
+            logger.error(f"Error executing auction refunds in finalize_auction: {e}")
 
         # Broadcast completion to WebSocket
         await manager.broadcast_to_auction(

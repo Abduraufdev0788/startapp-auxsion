@@ -46,3 +46,26 @@ class PaymentWebhookEventModel(Base, TimestampMixin, UUIDPrimaryKeyMixin):
     payload: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="PROCESSED", nullable=False)
 
+
+class WithdrawalRequestModel(Base, TimestampMixin, UUIDPrimaryKeyMixin):
+    __tablename__ = "withdrawal_requests"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    amount: Mapped[int] = mapped_column(BigInteger, nullable=False)  # in tiyin
+    currency: Mapped[str] = mapped_column(String(10), default=Currency.UZS.value, nullable=False)
+    card_number: Mapped[str] = mapped_column(String(30), nullable=False)  # masked e.g. "8600 **** **** 1234"
+    card_holder: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    card_type: Mapped[str] = mapped_column(String(30), default="UZCARD", nullable=False)
+    status: Mapped[str] = mapped_column(String(50), default=PaymentStatus.COMPLETED.value, nullable=False, index=True)
+    provider_ref: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    rejection_reason: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    __table_args__ = (
+        Index("idx_withdrawals_user_status", "user_id", "status"),
+    )
+
