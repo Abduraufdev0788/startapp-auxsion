@@ -110,3 +110,47 @@ class AuctionRepository:
         )
         self.db.add(event)
         await self.db.flush()
+
+    async def list_by_seller(self, seller_id: uuid.UUID) -> List[AuctionModel]:
+        stmt = (
+            select(AuctionModel)
+            .options(
+                selectinload(AuctionModel.product).selectinload(ProductModel.images),
+                selectinload(AuctionModel.result),
+            )
+            .where(AuctionModel.seller_id == seller_id)
+            .order_by(AuctionModel.created_at.desc())
+        )
+        res = await self.db.execute(stmt)
+        return list(res.scalars().all())
+
+    async def list_by_participant(self, user_id: uuid.UUID) -> List[AuctionModel]:
+        from app.modules.participants.models import AuctionParticipantModel
+        stmt = (
+            select(AuctionModel)
+            .join(AuctionParticipantModel, AuctionModel.id == AuctionParticipantModel.auction_id)
+            .options(
+                selectinload(AuctionModel.product).selectinload(ProductModel.images),
+                selectinload(AuctionModel.result),
+            )
+            .where(AuctionParticipantModel.user_id == user_id)
+            .order_by(AuctionModel.end_time.desc())
+        )
+        res = await self.db.execute(stmt)
+        return list(res.scalars().all())
+
+    async def list_won_by_user(self, user_id: uuid.UUID) -> List[AuctionModel]:
+        stmt = (
+            select(AuctionModel)
+            .options(
+                selectinload(AuctionModel.product).selectinload(ProductModel.images),
+                selectinload(AuctionModel.result),
+            )
+            .where(
+                AuctionModel.highest_bidder_id == user_id,
+                AuctionModel.status == AuctionStatus.COMPLETED.value,
+            )
+            .order_by(AuctionModel.end_time.desc())
+        )
+        res = await self.db.execute(stmt)
+        return list(res.scalars().all())

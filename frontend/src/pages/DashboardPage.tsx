@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Gavel,
   CreditCard,
@@ -9,6 +9,12 @@ import {
   AlertCircle,
   X,
   Package,
+  Trophy,
+  User,
+  Clock,
+  ShieldCheck,
+  CheckCircle2,
+  ExternalLink,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -22,13 +28,22 @@ import {
   productsService,
   auctionsService,
 } from '../services/api';
-import { Deposit, Notification, Category } from '../types';
+import { Deposit, Notification, Category, Auction } from '../types';
+
+type DashboardTab = 'auctions' | 'deposits' | 'notifications' | 'profile';
+type AuctionSubFilter = 'all' | 'participating' | 'created' | 'won';
 
 export const DashboardPage: React.FC = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'deposits' | 'notifications'>('overview');
+  // Kirishi bilanoq auksionlarda turishi kerak
+  const [activeTab, setActiveTab] = useState<DashboardTab>('auctions');
+  const [auctionSubFilter, setAuctionSubFilter] = useState<AuctionSubFilter>('all');
+
+  const [createdAuctions, setCreatedAuctions] = useState<Auction[]>([]);
+  const [participatingAuctions, setParticipatingAuctions] = useState<Auction[]>([]);
+  const [wonAuctions, setWonAuctions] = useState<Auction[]>([]);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -59,11 +74,25 @@ export const DashboardPage: React.FC = () => {
   const loadUserData = useCallback(async () => {
     setIsLoadingData(true);
     try {
-      const [depList, notifList, catList] = await Promise.all([
+      const [
+        createdList,
+        participatingList,
+        wonList,
+        depList,
+        notifList,
+        catList,
+      ] = await Promise.all([
+        auctionsService.getMyCreated().catch(() => []),
+        auctionsService.getMyParticipating().catch(() => []),
+        auctionsService.getMyWon().catch(() => []),
         depositsService.getMyDeposits().catch(() => []),
         notificationsService.list().catch(() => []),
         categoriesService.list().catch(() => []),
       ]);
+
+      setCreatedAuctions(createdList);
+      setParticipatingAuctions(participatingList);
+      setWonAuctions(wonList);
       setDeposits(depList);
       setNotifications(notifList);
       setCategories(catList);
@@ -87,6 +116,15 @@ export const DashboardPage: React.FC = () => {
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
       );
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationsService.markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch {
       // ignore
     }
@@ -144,6 +182,22 @@ export const DashboardPage: React.FC = () => {
     .filter((d) => d.status === 'REFUNDED')
     .reduce((sum, d) => sum + d.amount, 0);
 
+  // Aggregate auctions for "all"
+  const allUserAuctionsMap = new Map<string, Auction>();
+  participatingAuctions.forEach((a) => allUserAuctionsMap.set(a.id, a));
+  createdAuctions.forEach((a) => allUserAuctionsMap.set(a.id, a));
+  wonAuctions.forEach((a) => allUserAuctionsMap.set(a.id, a));
+  const allUserAuctions = Array.from(allUserAuctionsMap.values());
+
+  const displayedAuctions =
+    auctionSubFilter === 'participating'
+      ? participatingAuctions
+      : auctionSubFilter === 'created'
+      ? createdAuctions
+      : auctionSubFilter === 'won'
+      ? wonAuctions
+      : allUserAuctions;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Header Profile Banner */}
@@ -154,215 +208,468 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold">{user?.full_name || 'Foydalanuvchi'}</h1>
-            <p className="text-emerald-100 text-xs mt-0.5">
-              {user?.phone} • {user?.is_verified ? 'Tasdiqlangan hisob' : 'Standart hisob'}
+            <p className="text-emerald-100 text-xs mt-0.5 flex items-center space-x-2">
+              <span>{user?.phone}</span>
+              <span>•</span>
+              <span className="flex items-center">
+                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-200" />
+                {user?.is_verified ? 'Tasdiqlangan hisob' : 'Standart hisob'}
+              </span>
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          variant="secondary"
-          size="md"
-          className="shrink-0 bg-white text-emerald-800 hover:bg-emerald-50"
-        >
-          <PlusCircle className="w-4 h-4 mr-2" />
-          Yangi auksion yaratish
-        </Button>
+
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            variant="secondary"
+            size="md"
+            className="shrink-0 bg-white text-emerald-800 hover:bg-emerald-50 font-bold"
+          >
+            <PlusCircle className="w-4 h-4 mr-2" />
+            Yangi auksion yaratish
+          </Button>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+      {/* Overview Quick Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 space-y-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between text-slate-500 text-xs">
+            <span>Ishtiroklarim</span>
+            <Gavel className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="text-2xl font-extrabold">{participatingAuctions.length} ta</div>
+        </Card>
+
+        <Card className="p-4 space-y-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between text-slate-500 text-xs">
+            <span>Sotuvdagi lotlarim</span>
+            <Package className="w-4 h-4 text-blue-500" />
+          </div>
+          <div className="text-2xl font-extrabold">{createdAuctions.length} ta</div>
+        </Card>
+
+        <Card className="p-4 space-y-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between text-slate-500 text-xs">
+            <span>Yutuqlarim</span>
+            <Trophy className="w-4 h-4 text-amber-500" />
+          </div>
+          <div className="text-2xl font-extrabold">{wonAuctions.length} ta</div>
+        </Card>
+
+        <Card className="p-4 space-y-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between text-slate-500 text-xs">
+            <span>Band qilingan depozit</span>
+            <CreditCard className="w-4 h-4 text-teal-500" />
+          </div>
+          <div className="text-xl font-extrabold">{formatUZS(lockedDeposits)}</div>
+        </Card>
+      </div>
+
+      {/* Main Tabs (Bo'limlar) - Kirishi bilan auksionlarda turadi */}
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto">
         <button
-          onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
-            activeTab === 'overview'
+          onClick={() => setActiveTab('auctions')}
+          className={`px-4 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center space-x-2 ${
+            activeTab === 'auctions'
               ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
               : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          Umumiy ko'rinish
+          <Gavel className="w-4 h-4" />
+          <span>Auksionlarim ({allUserAuctions.length})</span>
         </button>
+
         <button
           onClick={() => setActiveTab('deposits')}
-          className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+          className={`px-4 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center space-x-2 ${
             activeTab === 'deposits'
               ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
               : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          Depozitlar va Qaytarmalar ({deposits.length})
+          <CreditCard className="w-4 h-4" />
+          <span>Depozitlar va Qaytarmalar ({deposits.length})</span>
         </button>
+
         <button
           onClick={() => setActiveTab('notifications')}
-          className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+          className={`px-4 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center space-x-2 ${
             activeTab === 'notifications'
               ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
               : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
-          Bildirishnomalar ({notifications.filter((n) => !n.is_read).length})
+          <Bell className="w-4 h-4" />
+          <span>Bildirishnomalar ({notifications.filter((n) => !n.is_read).length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('profile')}
+          className={`px-4 py-2 text-sm font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center space-x-2 ${
+            activeTab === 'profile'
+              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+              : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <User className="w-4 h-4" />
+          <span>Profil ma'lumotlari</span>
         </button>
       </div>
 
       {/* Content */}
       {isLoadingData ? (
-        <div className="py-12 text-center">
+        <div className="py-16 text-center">
           <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-3" />
-          <p className="text-xs text-slate-500">Ma'lumotlar yangilanmoqda...</p>
+          <p className="text-xs text-slate-500">Ma'lumotlar yuklanmoqda...</p>
         </div>
       ) : (
         <>
-          {activeTab === 'overview' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-5 space-y-2">
-              <div className="flex items-center justify-between text-slate-500 text-xs">
-                <span>Jami depozitlar</span>
-                <Gavel className="w-4 h-4 text-emerald-500" />
-              </div>
-              <div className="text-2xl font-extrabold">{deposits.length} ta</div>
-            </Card>
+          {/* TAB 1: AUCTIONS (Kirishi bilanoq auksionlarda turadi) */}
+          {activeTab === 'auctions' && (
+            <div className="space-y-6">
+              {/* Sub-filters for Auctions */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <button
+                  onClick={() => setAuctionSubFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    auctionSubFilter === 'all'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                  }`}
+                >
+                  Barchasi ({allUserAuctions.length})
+                </button>
 
-            <Card className="p-5 space-y-2">
-              <div className="flex items-center justify-between text-slate-500 text-xs">
-                <span>O'qilmagan xabarlar</span>
-                <Bell className="w-4 h-4 text-amber-500" />
-              </div>
-              <div className="text-2xl font-extrabold">
-                {notifications.filter((n) => !n.is_read).length} ta
-              </div>
-            </Card>
+                <button
+                  onClick={() => setAuctionSubFilter('participating')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    auctionSubFilter === 'participating'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                  }`}
+                >
+                  Ishtirok etayotganlarim ({participatingAuctions.length})
+                </button>
 
-            <Card className="p-5 space-y-2">
-              <div className="flex items-center justify-between text-slate-500 text-xs">
-                <span>Band qilingan depozit</span>
-                <CreditCard className="w-4 h-4 text-blue-500" />
-              </div>
-              <div className="text-2xl font-extrabold">{formatUZS(lockedDeposits)}</div>
-            </Card>
+                <button
+                  onClick={() => setAuctionSubFilter('created')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    auctionSubFilter === 'created'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                  }`}
+                >
+                  Sotuvga qo'yganlarim ({createdAuctions.length})
+                </button>
 
-            <Card className="p-5 space-y-2">
-              <div className="flex items-center justify-between text-slate-500 text-xs">
-                <span>Qaytarilgan depozitlar</span>
-                <RotateCcw className="w-4 h-4 text-emerald-500" />
+                <button
+                  onClick={() => setAuctionSubFilter('won')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    auctionSubFilter === 'won'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                  }`}
+                >
+                  Yutib olinganlar ({wonAuctions.length})
+                </button>
               </div>
-              <div className="text-2xl font-extrabold">{formatUZS(refundedDeposits)}</div>
-            </Card>
-          </div>
 
-          {/* Recent Notifications Quick Glance */}
-          <Card className="p-6 space-y-4">
-            <h3 className="font-bold text-base">So'nggi bildirishnomalar</h3>
-            {notifications.length === 0 ? (
-              <p className="text-xs text-slate-400 py-4 text-center">Hozircha yangi bildirishnomalar yo'q.</p>
-            ) : (
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                {notifications.slice(0, 5).map((n) => (
-                  <div key={n.id} className="py-3 flex items-start justify-between text-sm">
-                    <div>
-                      <div className="font-semibold text-slate-900 dark:text-slate-100">{n.title}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{n.body}</div>
-                      <div className="text-[11px] text-slate-400 mt-1">
-                        {new Date(n.created_at).toLocaleString()}
-                      </div>
-                    </div>
-                    {!n.is_read && (
-                      <button
-                        onClick={() => handleMarkAsRead(n.id)}
-                        className="text-xs text-emerald-600 font-medium hover:underline shrink-0 ml-4"
-                      >
-                        O'qildi
-                      </button>
-                    )}
+              {/* Auctions Grid */}
+              {displayedAuctions.length === 0 ? (
+                <Card className="p-12 text-center space-y-4">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 mx-auto flex items-center justify-center">
+                    <Gavel className="w-7 h-7" />
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </div>
-      )}
-
-      {activeTab === 'deposits' && (
-        <Card className="p-6">
-          <h3 className="font-bold text-base mb-4">Barcha depozitlar tarixi</h3>
-          {deposits.length === 0 ? (
-            <p className="text-xs text-slate-400 py-6 text-center">
-              Siz hali hech qaysi auksion uchun kafolat depoziti to'lamagansiz.
-            </p>
-          ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {deposits.map((d) => (
-                <div key={d.id} className="py-3 flex items-center justify-between text-sm">
-                  <div>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100">
-                      Auksion #{d.auction_id.slice(0, 8)}
-                    </div>
-                    <div className="text-xs text-slate-400">
-                      {new Date(d.created_at).toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-slate-800 dark:text-slate-200">
-                      {formatUZS(d.amount)}
-                    </div>
-                    <Badge
-                      variant={
-                        d.status === 'REFUNDED'
-                          ? 'success'
-                          : d.status === 'LOCKED' || d.status === 'PAID'
-                          ? 'warning'
-                          : 'neutral'
-                      }
-                    >
-                      {d.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      )}
-
-      {activeTab === 'notifications' && (
-        <Card className="p-6">
-          <h3 className="font-bold text-base mb-4">Barcha bildirishnomalar</h3>
-          {notifications.length === 0 ? (
-            <p className="text-xs text-slate-400 py-6 text-center">Bildirishnomalar mavjud emas.</p>
-          ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {notifications.map((n) => (
-                <div key={n.id} className="py-4 flex items-start justify-between text-sm">
                   <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold">{n.title}</span>
-                      {!n.is_read && (
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300">{n.body}</p>
-                    <span className="text-[11px] text-slate-400">
-                      {new Date(n.created_at).toLocaleString()}
-                    </span>
+                    <h3 className="font-bold text-base">Hozircha hech qanday auksion yo'q</h3>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                      {auctionSubFilter === 'participating'
+                        ? "Siz hali kafolat depoziti to'lab hech bir auksionda ishtirok etmadingiz."
+                        : auctionSubFilter === 'created'
+                        ? "Siz hali o'z mahsulotingizni auksionga qo'ymadingiz."
+                        : auctionSubFilter === 'won'
+                        ? "Siz hali yakunlangan auksionlarda g'olib bo'lmadingiz."
+                        : "Sizda hozircha auksionlar mavjud emas."}
+                    </p>
                   </div>
-                  {!n.is_read && (
+                  <div className="flex justify-center gap-3 pt-2">
+                    <Link to="/auctions">
+                      <Button size="sm">Bozordagi auksionlarni ko'rish</Button>
+                    </Link>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleMarkAsRead(n.id)}
-                      className="shrink-0 ml-4 text-xs"
+                      onClick={() => setIsModalOpen(true)}
                     >
-                      O'qildi
+                      Yangi auksion e'lon qilish
                     </Button>
-                  )}
+                  </div>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {displayedAuctions.map((auc) => (
+                    <Card
+                      key={auc.id}
+                      className="overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="relative aspect-video bg-slate-100 dark:bg-slate-800">
+                          <img
+                            src={
+                              auc.product?.images?.[0]?.image_url ||
+                              'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80'
+                            }
+                            alt={auc.product?.title || 'Auksion'}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-3 left-3">
+                            <Badge
+                              variant={
+                                auc.status === 'ACTIVE'
+                                  ? 'warning'
+                                  : auc.status === 'COMPLETED'
+                                  ? 'success'
+                                  : 'neutral'
+                              }
+                            >
+                              {auc.status}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="p-4 space-y-2">
+                          <h4 className="font-bold text-sm line-clamp-1">
+                            {auc.product?.title || 'Lot #' + auc.id.slice(0, 8)}
+                          </h4>
+                          <div className="text-xs text-slate-500 flex items-center space-x-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>
+                              Tugash: {new Date(auc.end_time).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <div className="text-[11px] text-slate-400">
+                              Hozirgi taklif:
+                            </div>
+                            <div className="text-lg font-extrabold text-emerald-600">
+                              {formatUZS(auc.current_highest_bid)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 pt-0">
+                        <Link to={`/auctions/${auc.id}`}>
+                          <Button size="sm" variant="outline" className="w-full text-xs">
+                            Batafsil ko'rish
+                            <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
-        </Card>
+
+          {/* TAB 2: DEPOSITS & REFUNDS */}
+          {activeTab === 'deposits' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card className="p-5 space-y-1">
+                  <div className="text-xs text-slate-500 flex items-center justify-between">
+                    <span>Muzlatilgan depozitlar (LOCKED)</span>
+                    <CreditCard className="w-4 h-4 text-amber-500" />
+                  </div>
+                  <div className="text-2xl font-extrabold text-amber-600">
+                    {formatUZS(lockedDeposits)}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Auksion davomida ishtirokingizni kafolatlaydi
+                  </p>
+                </Card>
+
+                <Card className="p-5 space-y-1">
+                  <div className="text-xs text-slate-500 flex items-center justify-between">
+                    <span>Qaytarilgan depozitlar (REFUNDED)</span>
+                    <RotateCcw className="w-4 h-4 text-emerald-500" />
+                  </div>
+                  <div className="text-2xl font-extrabold text-emerald-600">
+                    +{formatUZS(refundedDeposits)}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Auksion tugashi bilan 100% kartangizga qaytarilgan
+                  </p>
+                </Card>
+              </div>
+
+              <Card className="p-6">
+                <h3 className="font-bold text-base mb-4">Depozitlar va Qaytarmalar jurnali</h3>
+                {deposits.length === 0 ? (
+                  <p className="text-xs text-slate-400 py-6 text-center">
+                    Siz hali hech qaysi auksion uchun kafolat depoziti to'lamagansiz.
+                  </p>
+                ) : (
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {deposits.map((d) => (
+                      <div
+                        key={d.id}
+                        className="py-3 flex items-center justify-between text-sm"
+                      >
+                        <div>
+                          <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                            <span>Kafolat depoziti</span>
+                            <span className="text-xs text-slate-400 font-normal">
+                              (Auksion #{d.auction_id.slice(0, 8)})
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            {new Date(d.created_at).toLocaleString()}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-slate-800 dark:text-slate-200">
+                            {formatUZS(d.amount)}
+                          </div>
+                          <Badge
+                            variant={
+                              d.status === 'REFUNDED'
+                                ? 'success'
+                                : d.status === 'LOCKED' || d.status === 'PAID'
+                                ? 'warning'
+                                : 'neutral'
+                            }
+                          >
+                            {d.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
+
+          {/* TAB 3: NOTIFICATIONS */}
+          {activeTab === 'notifications' && (
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-base">Bildirishnomalar</h3>
+                {notifications.some((n) => !n.is_read) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMarkAllAsRead}
+                    className="text-xs"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-500" />
+                    Barchasini o'qildi deb belgilash
+                  </Button>
+                )}
+              </div>
+
+              {notifications.length === 0 ? (
+                <p className="text-xs text-slate-400 py-6 text-center">
+                  Bildirishnomalar mavjud emas.
+                </p>
+              ) : (
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className="py-4 flex items-start justify-between text-sm"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold">{n.title}</span>
+                          {!n.is_read && (
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-300">
+                          {n.body}
+                        </p>
+                        <span className="text-[11px] text-slate-400">
+                          {new Date(n.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      {!n.is_read && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleMarkAsRead(n.id)}
+                          className="shrink-0 ml-4 text-xs"
+                        >
+                          O'qildi
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* TAB 4: PROFILE */}
+          {activeTab === 'profile' && (
+            <Card className="p-6 space-y-6">
+              <h3 className="font-bold text-lg">Profil ma'lumotlari va Xavfsizlik</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400 font-medium">To'liq ism</div>
+                  <div className="font-semibold text-base">{user?.full_name}</div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400 font-medium">Telefon raqami</div>
+                  <div className="font-semibold text-base">{user?.phone}</div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400 font-medium">Elektron pochta</div>
+                  <div className="font-semibold text-base">
+                    {user?.email || 'Kiritilmagan'}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400 font-medium">Rollar</div>
+                  <div className="flex gap-1.5 pt-1">
+                    {user?.roles?.map((r) => (
+                      <Badge key={r} variant="neutral">
+                        {r}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400 font-medium">Hisob holati</div>
+                  <div className="pt-1">
+                    <Badge variant={user?.is_active ? 'success' : 'danger'}>
+                      {user?.is_active ? 'FAOL' : 'BLOKLANGAN'}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400 font-medium">Identifikatsiya</div>
+                  <div className="pt-1">
+                    <Badge variant={user?.is_verified ? 'success' : 'warning'}>
+                      {user?.is_verified ? 'TASDIQLANGAN' : 'TASDIQLANMAGAN'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+        </>
       )}
-    </>
-  )}
 
       {/* Create Auction Modal */}
       {isModalOpen && (

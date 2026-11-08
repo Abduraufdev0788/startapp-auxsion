@@ -134,3 +134,15 @@ class AuctionService:
         )
         await self.db.commit()
         return auction
+
+    async def list_my_created(self, seller_id: uuid.UUID) -> List[AuctionResponse]:
+        items = await self.repo.list_by_seller(seller_id)
+        return [AuctionResponse.model_validate(item) for item in items]
+
+    async def list_my_participating(self, user_id: uuid.UUID) -> List[AuctionResponse]:
+        items = await self.repo.list_by_participant(user_id)
+        return [AuctionResponse.model_validate(item) for item in items]
+
+    async def list_my_won(self, user_id: uuid.UUID) -> List[AuctionResponse]:
+        items = await self.repo.list_won_by_user(user_id)
+        return [AuctionResponse.model_validate(item) for item in items]

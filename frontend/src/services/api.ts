@@ -144,6 +144,21 @@ export const auctionsService = {
     });
     return res.data;
   },
+
+  async getMyCreated(): Promise<Auction[]> {
+    const res = await apiClient.get<Auction[]>('/auctions/my/created');
+    return res.data;
+  },
+
+  async getMyParticipating(): Promise<Auction[]> {
+    const res = await apiClient.get<Auction[]>('/auctions/my/participating');
+    return res.data;
+  },
+
+  async getMyWon(): Promise<Auction[]> {
+    const res = await apiClient.get<Auction[]>('/auctions/my/won');
+    return res.data;
+  },
 };
 
 export const biddingService = {

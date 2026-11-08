@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional
+from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -45,6 +45,48 @@ async def list_auctions(
     params = PaginationParams(page=page, page_size=page_size)
     service = AuctionService(db)
     return await service.list_marketplace(category_id, status, search, params)
+
+
+@router.get(
+    "/my/created",
+    response_model=List[AuctionResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Mening sotuvga qo'ygan auksionlarim ro'yxati",
+)
+async def list_my_created_auctions(
+    current_user: UserModel = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = AuctionService(db)
+    return await service.list_my_created(current_user.id)
+
+
+@router.get(
+    "/my/participating",
+    response_model=List[AuctionResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Men ishtirok etayotgan auksionlar ro'yxati",
+)
+async def list_my_participating_auctions(
+    current_user: UserModel = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = AuctionService(db)
+    return await service.list_my_participating(current_user.id)
+
+
+@router.get(
+    "/my/won",
+    response_model=List[AuctionResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Men yutib olgan auksionlar ro'yxati",
+)
+async def list_my_won_auctions(
+    current_user: UserModel = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = AuctionService(db)
+    return await service.list_my_won(current_user.id)
 
 
 @router.get(
