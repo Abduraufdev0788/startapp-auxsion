@@ -287,6 +287,28 @@ export interface Translations {
     publishBtn: string;
     publishing: string;
   };
+  auth: {
+    loginTitle: string;
+    loginSubtitle: string;
+    phoneLabel: string;
+    passwordLabel: string;
+    forgotPassword: string;
+    loginButton: string;
+    noAccount: string;
+    registerLink: string;
+    registerTitle: string;
+    registerSubtitle: string;
+    fullNameLabel: string;
+    fullNamePlaceholder: string;
+    passwordLengthHint: string;
+    agreeTerms: string;
+    termsLink: string;
+    registerButton: string;
+    hasAccount: string;
+    loginLink: string;
+    loginError: string;
+    registerError: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -577,6 +599,28 @@ export const translations: Record<Language, Translations> = {
       publishBtn: "Auksionni darhol e'lon qilish",
       publishing: "Auksion yaratilmoqda...",
     },
+    auth: {
+      loginTitle: 'Tizimga kirish',
+      loginSubtitle: 'AuctionHub shaxsiy profilingizga kiring',
+      phoneLabel: 'Telefon raqami',
+      passwordLabel: 'Parol',
+      forgotPassword: 'Parolni unutdingizmi?',
+      loginButton: 'Kirish',
+      noAccount: "Profilingiz yo'qmi?",
+      registerLink: "Ro'yxatdan o'tish",
+      registerTitle: "Ro'yxatdan o'tish",
+      registerSubtitle: 'AuctionHub platformasida yangi akkaunt yarating',
+      fullNameLabel: "To'liq ism-familiya",
+      fullNamePlaceholder: 'Alisher Navoiy',
+      passwordLengthHint: 'Parol (kamida 8 ta belgi)',
+      agreeTerms: "Ro'yxatdan o'tish orqali siz",
+      termsLink: 'Foydalanish shartlari',
+      registerButton: 'Akkaunt yaratish',
+      hasAccount: 'Akkauntingiz bormi?',
+      loginLink: 'Kirish',
+      loginError: "Kirishda xatolik yuz berdi. Ma'lumotlarni tekshiring.",
+      registerError: "Ro'yxatdan o'tishda xatolik yuz berdi. Ma'lumotlarni tekshiring.",
+    },
   },
   ru: {
     common: {
@@ -865,6 +909,28 @@ export const translations: Record<Language, Translations> = {
       publishBtn: 'Опубликовать аукцион',
       publishing: 'Создание аукциона...',
     },
+    auth: {
+      loginTitle: 'Вход в систему',
+      loginSubtitle: 'Войдите в личный профиль AuctionHub',
+      phoneLabel: 'Номер телефона',
+      passwordLabel: 'Пароль',
+      forgotPassword: 'Забыли пароль?',
+      loginButton: 'Войти',
+      noAccount: 'Нет аккаунта?',
+      registerLink: 'Зарегистрироваться',
+      registerTitle: 'Регистрация',
+      registerSubtitle: 'Создайте новый аккаунт на платформе AuctionHub',
+      fullNameLabel: 'ФИО (Полное имя)',
+      fullNamePlaceholder: 'Алишер Навои',
+      passwordLengthHint: 'Пароль (не менее 8 символов)',
+      agreeTerms: 'Регистрируясь, вы соглашаетесь с',
+      termsLink: 'Условиями использования',
+      registerButton: 'Создать аккаунт',
+      hasAccount: 'Уже есть аккаунт?',
+      loginLink: 'Войти',
+      loginError: 'Ошибка при входе. Пожалуйста, проверьте введённые данные.',
+      registerError: 'Ошибка при регистрации. Пожалуйста, проверьте данные.',
+    },
   },
   en: {
     common: {
@@ -1152,6 +1218,28 @@ export const translations: Record<Language, Translations> = {
       deliveryInfoLabel: 'Delivery Details *',
       publishBtn: 'Publish Auction Now',
       publishing: 'Publishing auction...',
+    },
+    auth: {
+      loginTitle: 'Sign In',
+      loginSubtitle: 'Sign in to your AuctionHub account',
+      phoneLabel: 'Phone Number',
+      passwordLabel: 'Password',
+      forgotPassword: 'Forgot password?',
+      loginButton: 'Sign In',
+      noAccount: "Don't have an account?",
+      registerLink: 'Create an account',
+      registerTitle: 'Create an Account',
+      registerSubtitle: 'Join AuctionHub and start participating in live auctions',
+      fullNameLabel: 'Full Name',
+      fullNamePlaceholder: 'John Doe',
+      passwordLengthHint: 'Password (min. 8 characters)',
+      agreeTerms: 'By signing up, you agree to our',
+      termsLink: 'Terms and Conditions',
+      registerButton: 'Register Account',
+      hasAccount: 'Already have an account?',
+      loginLink: 'Sign In',
+      loginError: 'Failed to sign in. Please check your credentials.',
+      registerError: 'Registration failed. Please check your details.',
     },
   },
 };

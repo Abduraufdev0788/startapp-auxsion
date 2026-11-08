@@ -5,8 +5,10 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { authService } from '../services/api';
 import { useAuth } from '../app/providers';
+import { useLanguage } from '../context/LanguageContext';
 
 export const LoginPage: React.FC = () => {
+  const { t } = useLanguage();
   const [phone, setPhone] = useState<string>('+998');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export const LoginPage: React.FC = () => {
       await login(tokens);
       navigate('/dashboard');
     } catch (err: any) {
-      const msg = err.response?.data?.detail || 'Kirishda xatolik yuz berdi. Ma\'lumotlarni tekshiring.';
+      const msg = err.response?.data?.detail || t.auth.loginError;
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -38,9 +40,9 @@ export const LoginPage: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-emerald-600 mx-auto flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
             <Gavel className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Tizimga kirish</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t.auth.loginTitle}</h1>
           <p className="text-xs text-slate-500">
-            AuctionHub shaxsiy profilingizga kiring
+            {t.auth.loginSubtitle}
           </p>
         </div>
 
@@ -54,7 +56,7 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Telefon raqami
+              {t.auth.phoneLabel}
             </label>
             <div className="relative">
               <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -72,10 +74,10 @@ export const LoginPage: React.FC = () => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Parol
+                {t.auth.passwordLabel}
               </label>
               <Link to="/forgot-password" className="text-xs text-emerald-600 hover:underline">
-                Parolni unutdingizmi?
+                {t.auth.forgotPassword}
               </Link>
             </div>
             <div className="relative">
@@ -92,14 +94,14 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <Button type="submit" isLoading={isLoading} className="w-full py-2.5">
-            Kirish
+            {t.auth.loginButton}
           </Button>
         </form>
 
         <div className="text-center text-xs text-slate-500 pt-4 border-t border-slate-100 dark:border-slate-800">
-          Profilingiz yo'qmi?{' '}
+          {t.auth.noAccount}{' '}
           <Link to="/register" className="font-semibold text-emerald-600 hover:underline">
-            Ro'yxatdan o'tish
+            {t.auth.registerLink}
           </Link>
         </div>
       </Card>
