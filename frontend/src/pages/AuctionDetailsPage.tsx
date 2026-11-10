@@ -363,13 +363,13 @@ export const AuctionDetailsPage: React.FC = () => {
                       src={activeUrl}
                       controls
                       autoPlay={false}
-                      className="w-full h-[420px] object-contain bg-black"
+                      className="w-full h-[260px] sm:h-[420px] object-contain bg-black"
                     />
                   ) : (
                     <img
                       src={activeUrl}
                       alt={current.product?.title || t.common.appName}
-                      className="w-full h-[420px] object-cover"
+                      className="w-full h-[260px] sm:h-[420px] object-cover"
                     />
                   )}
 

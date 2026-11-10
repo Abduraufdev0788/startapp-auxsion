@@ -13,9 +13,14 @@ from app.core.exceptions import (
 )
 from app.modules.auctions.models import AuctionModel
 from app.modules.auctions.repository import AuctionRepository
-from app.modules.auctions.schemas import AuctionCreateRequest, AuctionResponse
+from app.modules.auctions.schemas import AuctionCreateRequest, AuctionResponse, AuctionStatisticsResponse
 from app.modules.products.repository import ProductRepository
 from app.utils.pagination import PaginatedResponse, PaginationParams
+from sqlalchemy import select, func
+from app.modules.users.models import UserModel
+from app.modules.bidding.models import BidModel
+from app.modules.deposits.models import DepositModel
+from app.modules.auctions.models import AuctionResultModel
 
 
 class AuctionService:
@@ -154,3 +159,34 @@ class AuctionService:
     async def list_my_won(self, user_id: uuid.UUID) -> List[AuctionResponse]:
         items = await self.repo.list_won_by_user(user_id)
         return [AuctionResponse.model_validate(item) for item in items]
+
+    async def get_public_statistics(self) -> AuctionStatisticsResponse:
+        total_users = (await self.db.execute(select(func.count(UserModel.id)))).scalar() or 0
+        total_auctions = (await self.db.execute(select(func.count(AuctionModel.id)))).scalar() or 0
+        active_auctions = (
+            await self.db.execute(
+                select(func.count(AuctionModel.id)).where(AuctionModel.status == AuctionStatus.ACTIVE.value)
+            )
+        ).scalar() or 0
+        completed_auctions = (
+            await self.db.execute(
+                select(func.count(AuctionModel.id)).where(AuctionModel.status == AuctionStatus.COMPLETED.value)
+            )
+        ).scalar() or 0
+        total_bids = (await self.db.execute(select(func.count(BidModel.id)))).scalar() or 0
+        total_participants = (await self.db.execute(select(func.count(DepositModel.id)))).scalar() or 0
+
+        # Total GMV
+        gmv_tiyin = (await self.db.execute(select(func.sum(AuctionResultModel.winning_bid)))).scalar() or 0
+        total_gmv_uzs = float(gmv_tiyin) / 100.0
+
+        return AuctionStatisticsResponse(
+            total_users=total_users,
+            total_auctions=total_auctions,
+            active_auctions=active_auctions,
+            completed_auctions=completed_auctions,
+            total_bids=total_bids,
+            total_participants=total_participants,
+            total_gmv_uzs=total_gmv_uzs,
+            guarantee_rate=100,
+        )

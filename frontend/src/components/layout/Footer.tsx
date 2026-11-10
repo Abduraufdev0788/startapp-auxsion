@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Gavel, ShieldCheck, HeartHandshake, Zap, Phone, Mail, Send, Award, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, HeartHandshake, Zap, Phone, Mail, Send, Award, CheckCircle2 } from 'lucide-react';
+import { Logo } from '../common/Logo';
 
 export const Footer: React.FC = () => {
   return (
@@ -9,14 +10,7 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
           {/* Brand & Mission */}
           <div className="lg:col-span-2 space-y-4">
-            <Link to="/" className="flex items-center space-x-2.5 group inline-flex">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                <Gavel className="w-5 h-5" />
-              </div>
-              <span className="text-2xl font-black bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 bg-clip-text text-transparent">
-                Lotly
-              </span>
-            </Link>
+            <Logo size="lg" />
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-sm">
               O'zbekistondagi 1-raqamli kafolatli va shaffof onlayn auksion ekotizimi. Xaridorlar uchun arzon narxlar, sotuvchilar uchun esa yuqori bozor talabi.
             </p>
@@ -99,6 +93,10 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li className="pt-2 flex items-center space-x-2 text-xs text-slate-500">
+                <Mail className="w-3.5 h-3.5 text-emerald-500" />
+                <a href="mailto:support@lotly.uz" className="hover:underline">support@lotly.uz</a>
+              </li>
+              <li className="flex items-center space-x-2 text-xs text-slate-500">
                 <Send className="w-3.5 h-3.5 text-emerald-500" />
                 <a href="https://t.me" target="_blank" rel="noreferrer" className="hover:underline">@LotlySupportBot</a>
               </li>

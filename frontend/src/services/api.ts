@@ -93,6 +93,17 @@ export interface ProductCreateDTO {
   condition: string;
 }
 
+export interface AuctionStatistics {
+  total_users: number;
+  total_auctions: number;
+  active_auctions: number;
+  completed_auctions: number;
+  total_bids: number;
+  total_participants: number;
+  total_gmv_uzs: number;
+  guarantee_rate: number;
+}
+
 export const authService = {
   async register(data: RegisterDTO): Promise<AuthTokens> {
     const res = await apiClient.post<AuthTokens>('/auth/register', data);
@@ -162,6 +173,11 @@ export const auctionsService = {
 
   async getMyWon(): Promise<Auction[]> {
     const res = await apiClient.get<Auction[]>('/auctions/my/won');
+    return res.data;
+  },
+
+  async getStatistics(): Promise<AuctionStatistics> {
+    const res = await apiClient.get<AuctionStatistics>('/auctions/statistics');
     return res.data;
   },
 };

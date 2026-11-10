@@ -57,3 +57,15 @@ class AuctionResponse(BaseModel):
     product: Optional[ProductResponse] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AuctionStatisticsResponse(BaseModel):
+    total_users: int
+    total_auctions: int
+    active_auctions: int
+    completed_auctions: int
+    total_bids: int
+    total_participants: int
+    total_gmv_uzs: float
+    guarantee_rate: int = 100
+

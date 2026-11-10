@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Gavel, Lock, Phone, User, AlertCircle } from 'lucide-react';
+import { Lock, Phone, User, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Logo } from '../components/common/Logo';
 import { authService } from '../services/api';
 import { useAuth } from '../app/providers';
 import { useLanguage } from '../context/LanguageContext';
@@ -39,11 +40,11 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-600 mx-auto flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-            <Gavel className="w-6 h-6" />
+    <div className="min-h-[80vh] flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
+      <Card className="w-full max-w-md p-5 sm:p-8 space-y-5 sm:space-y-6 rounded-2xl sm:rounded-3xl">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center mb-1">
+            <Logo size="lg" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{t.auth.registerTitle}</h1>
           <p className="text-xs text-slate-500">

@@ -31,7 +31,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem('theme');
     if (saved === 'dark' || saved === 'light') return saved;
-    return 'light'; // default is light (kunduzgi)
+    return 'dark'; // default is dark (matches Lotly marketplace screenshot)
   });
 
   // Apply theme to DOM

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
 from app.modules.auth.dependencies import get_current_active_user
-from app.modules.auctions.schemas import AuctionCreateRequest, AuctionResponse
+from app.modules.auctions.schemas import AuctionCreateRequest, AuctionResponse, AuctionStatisticsResponse
 from app.modules.auctions.service import AuctionService
 from app.modules.users.models import UserModel
 from app.utils.pagination import PaginatedResponse, PaginationParams
@@ -45,6 +45,19 @@ async def list_auctions(
     params = PaginationParams(page=page, page_size=page_size)
     service = AuctionService(db)
     return await service.list_marketplace(category_id, status, search, params)
+
+
+@router.get(
+    "/statistics",
+    response_model=AuctionStatisticsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Platformaning jonli statistikasi (Jami auksionlar, foydalanuvchilar, aylanma)",
+)
+async def get_public_statistics(
+    db: AsyncSession = Depends(get_db),
+):
+    service = AuctionService(db)
+    return await service.get_public_statistics()
 
 
 @router.get(

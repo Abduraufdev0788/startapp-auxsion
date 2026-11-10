@@ -36,10 +36,8 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Receipt,
-  Check,
   ChevronDown,
   ArrowUpDown,
-  SlidersHorizontal,
   LayoutGrid,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
@@ -158,9 +156,6 @@ export const DashboardPage: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string>(initialCatParam);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
-
-  // Mobile & Quick Sections Drawer / Bottom Sheet Modal
-  const [isSectionsDrawerOpen, setIsSectionsDrawerOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const s = searchParams.get('search');
@@ -312,7 +307,7 @@ export const DashboardPage: React.FC = () => {
         auctionsService.getMyCreated().catch(() => []),
         auctionsService.getMyParticipating().catch(() => []),
         auctionsService.getMyWon().catch(() => []),
-        auctionsService.list({ status: 'ACTIVE' }).catch(() => ({ items: [] })),
+        auctionsService.list({ status: 'ACTIVE', page_size: 100 }).catch(() => ({ items: [] })),
         favoritesService.list().catch(() => []),
         favoritesService.getIds().catch(() => []),
         depositsService.getMyDeposits().catch(() => []),
@@ -759,376 +754,118 @@ export const DashboardPage: React.FC = () => {
     },
   ];
 
-  const activeSectionItem = sectionItems.find((s) => s.id === activeSection) || sectionItems[0];
-
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
-      {/* ================= MOBILE TOP HEADER SNIPPET ================= */}
-      <div className="lg:hidden p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3">
-        <div className="flex items-center space-x-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-500/20 shrink-0">
-            {user?.full_name?.slice(0, 2).toUpperCase() || 'AH'}
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-bold text-slate-900 dark:text-slate-100 truncate text-sm">
-              {user?.full_name || t.nav.cabinet}
-            </h2>
-            <p className="text-[11px] text-slate-400 truncate">{user?.phone}</p>
-          </div>
-        </div>
-
-        {/* Quick Balance & Withdraw Button on Mobile */}
-        <div className="flex items-center space-x-2.5 shrink-0">
-          <div className="text-right">
-            <div className="text-[10px] text-slate-400 uppercase font-bold">{t.dashboard.availableBalance}</div>
-            <div className="text-sm font-black text-emerald-600">
-              {formatUZS(walletBalance?.balance_tiyin || 0)}
-            </div>
-          </div>
-          <Button
-            onClick={() => setIsWithdrawalModalOpen(true)}
-            variant="outline"
-            size="sm"
-            className="text-xs font-semibold py-1.5 px-2.5"
-            title={t.dashboard.withdraw}
-          >
-            <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600 sm:mr-1" />
-            <span className="hidden sm:inline">{t.dashboard.withdraw}</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* ================= MOBILE / TABLET STICKY SECTIONS BUTTON BAR ================= */}
-      <div className="lg:hidden sticky top-16 z-30 -mx-3 sm:-mx-6 px-3 sm:px-6 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2.5">
-        <button
-          type="button"
-          onClick={() => setIsSectionsDrawerOpen(true)}
-          className="flex-1 flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:border-emerald-500 active:scale-[0.99] transition-all text-left shadow-sm"
-        >
-          <div className="flex items-center space-x-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-600/30">
-              <LayoutGrid className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block leading-none">
-                {t.dashboard.sidebarTitle || "Bo'limlar"}
-              </span>
-              <span className="text-xs font-black text-slate-900 dark:text-white truncate block mt-0.5 leading-none">
-                {activeSectionItem.label}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center space-x-1.5 shrink-0 ml-2">
-            {typeof activeSectionItem.count === 'number' && (
-              <Badge variant={activeSectionItem.badgeVariant || 'success'}>
-                {activeSectionItem.count}
-              </Badge>
-            )}
-            <div className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-slate-500 shadow-xs">
-              <ChevronDown className="w-3.5 h-3.5" />
-            </div>
-          </div>
-        </button>
-
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          variant="primary"
-          size="sm"
-          className="shrink-0 text-xs py-2.5 px-3.5 bg-emerald-600 hover:bg-emerald-700 font-bold rounded-2xl shadow-md shadow-emerald-600/20 flex items-center space-x-1"
-        >
-          <PlusCircle className="w-4 h-4 sm:mr-1" />
-          <span className="hidden sm:inline">{t.dashboard.postNewLot}</span>
-        </Button>
-      </div>
-
-      {/* ================= SECTIONS DRAWER / BOTTOM SHEET MODAL ================= */}
-      {isSectionsDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setIsSectionsDrawerOpen(false)}
-          />
-
-          {/* Modal / Bottom Sheet Box */}
-          <div className="relative w-full sm:max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom duration-200 z-10">
-            {/* Mobile drag handle */}
-            <div className="sm:hidden pt-3 pb-1 flex justify-center">
-              <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-            </div>
-
-            {/* Header */}
-            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold">
-                  <LayoutGrid className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                    {t.dashboard.sidebarTitle || "Bo'limlar"}
-                  </h3>
-                  <p className="text-[11px] text-slate-400">
-                    Kerakli bo'limni tanlang
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsSectionsDrawerOpen(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Scrollable List of Sections */}
-            <div className="p-4 overflow-y-auto space-y-4 flex-1">
-              {/* User Quick Info & Balance */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
-                <div className="flex items-center space-x-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
-                    {user?.full_name?.slice(0, 2).toUpperCase() || 'AH'}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                      {user?.full_name || t.nav.cabinet}
-                    </div>
-                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold truncate">
-                      {t.dashboard.walletTitle}: {formatUZS(walletBalance?.balance_tiyin || 0)}
-                    </div>
-                  </div>
-                </div>
+    <div className="space-y-6 sm:space-y-8 pb-16">
+      {/* ================= HEADER SECTIONS NAVIGATION BAR (HORIZONTAL IN TOP HEADER) ================= */}
+      <div className="sticky top-16 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-xs py-3 px-3 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          
+          {/* Horizontal Scrollable Tabs */}
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
+            {sectionItems.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
                 <button
-                  type="button"
-                  onClick={() => {
-                    setIsSectionsDrawerOpen(false);
-                    setIsWithdrawalModalOpen(true);
-                  }}
-                  className="px-2.5 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                  key={item.id}
+                  onClick={() => handleSectionChange(item.id)}
+                  className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
+                    isActive
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent'
+                  }`}
                 >
-                  {t.dashboard.withdraw}
+                  <span className={isActive ? 'text-white' : ''}>{item.icon}</span>
+                  <span>{item.label}</span>
+                  {typeof item.count === 'number' && (
+                    <span
+                      className={`px-1.5 py-0.5 text-[10px] font-black rounded-full ${
+                        isActive
+                          ? 'bg-white/25 text-white'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      {item.count}
+                    </span>
+                  )}
                 </button>
-              </div>
-
-              {/* Group 1: Auksionlar va Savdolar */}
-              <div className="space-y-1">
-                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 px-2 py-1">
-                  Savdolar va Auksionlar
-                </div>
-                {sectionItems.slice(0, 6).map((item) => {
-                  const isActive = activeSection === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        handleSectionChange(item.id);
-                        setIsSectionsDrawerOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all ${
-                        isActive
-                          ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold border border-emerald-200/80 dark:border-emerald-800'
-                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <span className={`p-2 rounded-xl ${
-                          isActive
-                            ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                        }`}>
-                          {item.icon}
-                        </span>
-                        <span className="text-xs font-bold">{item.label}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {typeof item.count === 'number' && (
-                          <Badge variant={isActive ? (item.badgeVariant || 'success') : 'neutral'}>
-                            {item.count}
-                          </Badge>
-                        )}
-                        {isActive && <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Group 2: Moliya va Sozlamalar */}
-              <div className="space-y-1">
-                <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 px-2 py-1">
-                  Moliya va Sozlamalar
-                </div>
-                {sectionItems.slice(6).map((item) => {
-                  const isActive = activeSection === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        handleSectionChange(item.id);
-                        setIsSectionsDrawerOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all ${
-                        isActive
-                          ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold border border-emerald-200/80 dark:border-emerald-800'
-                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <span className={`p-2 rounded-xl ${
-                          isActive
-                            ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                        }`}>
-                          {item.icon}
-                        </span>
-                        <span className="text-xs font-bold">{item.label}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {typeof item.count === 'number' && (
-                          <Badge variant={isActive ? (item.badgeVariant || 'neutral') : 'neutral'}>
-                            {item.count}
-                          </Badge>
-                        )}
-                        {isActive && <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+              );
+            })}
           </div>
-        </div>
-      )}
 
-      {/* 2-Column Dashboard Layout: Left Sidebar (Desktop Fixed) + Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-        {/* ================= LEFT SIDEBAR (Desktop Sticky & Fixed) ================= */}
-        <aside className="hidden lg:block lg:col-span-3 space-y-4 lg:sticky lg:top-20 self-start max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar">
-          {/* User Profile Mini Card */}
-          <Card className="p-5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center space-x-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-emerald-500/20 shrink-0">
-                {user?.full_name?.slice(0, 2).toUpperCase() || 'AH'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="font-bold text-slate-900 dark:text-slate-100 truncate text-sm">
-                  {user?.full_name || t.nav.cabinet}
-                </h2>
-                <p className="text-xs text-slate-400 truncate">{user?.phone}</p>
-                <div className="flex items-center text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
-                  <ShieldCheck className="w-3 h-3 mr-1 shrink-0" />
-                  <span>{user?.is_verified ? t.common.verified : t.common.standard}</span>
-                </div>
-              </div>
-            </div>
+          {/* Right Action Controls: Wallet Balance & + Yangi lot joylash */}
+          <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+            <button
+              onClick={() => setIsWithdrawalModalOpen(true)}
+              className="flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+              title="Hisobim va Hamyon"
+            >
+              <Wallet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="truncate max-w-[80px] sm:max-w-none">{formatUZS(walletBalance?.balance_tiyin || 0)}</span>
+              <ArrowUpRight className="w-3 h-3 text-emerald-500 ml-0.5 shrink-0" />
+            </button>
 
-            {/* OLX-Style "Yangi lot joylash" Button */}
             <Button
               onClick={() => setIsModalOpen(true)}
               variant="primary"
-              size="md"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow-md shadow-emerald-600/20 flex items-center justify-center text-xs"
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 sm:py-2 px-2.5 sm:px-3.5 rounded-xl text-xs shadow-md shadow-emerald-600/20 flex items-center space-x-1 shrink-0"
             >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              <span>{t.dashboard.postNewLot}</span>
+              <PlusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">{t.dashboard.postNewLot}</span>
+              <span className="sm:hidden font-bold">Lot joylash</span>
             </Button>
-          </Card>
+          </div>
+        </div>
+      </div>
 
-          {/* Navigation Menu Bo'limlari */}
-          <Card className="p-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800/60">
-            {/* Auksion bo'limlari */}
-            <div className="space-y-1 p-1">
-              {sectionItems.slice(0, 6).map((item) => {
-                const isActive = activeSection === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleSectionChange(item.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                      isActive
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <span className="flex items-center space-x-2.5">
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </span>
-                    {typeof item.count === 'number' && (
-                      <Badge variant={isActive ? (item.badgeVariant || 'success') : 'neutral'}>
-                        {item.count}
-                      </Badge>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Moliya va Sozlamalar */}
-            <div className="space-y-1 p-1 pt-2">
-              {sectionItems.slice(6).map((item) => {
-                const isActive = activeSection === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleSectionChange(item.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                      isActive
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold shadow-sm'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <span className="flex items-center space-x-2.5">
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </span>
-                    {typeof item.count === 'number' && (
-                      <Badge variant={isActive ? (item.badgeVariant || 'neutral') : 'neutral'}>
-                        {item.count}
-                      </Badge>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* Balance & Wallet Widget */}
-          <Card className="p-4 bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-800 text-white rounded-3xl shadow-xl shadow-emerald-600/15 space-y-3.5 border-none">
-            <div className="flex items-center justify-between text-xs text-emerald-100/90 font-medium">
-              <span className="flex items-center space-x-1.5">
-                <Wallet className="w-3.5 h-3.5" />
-                <span>{t.dashboard.walletTitle}</span>
-              </span>
-              <ShieldCheck className="w-4 h-4 text-emerald-200" />
-            </div>
-
-            <div>
-              <div className="text-2xl font-black tracking-tight">
-                {formatUZS(walletBalance?.balance_tiyin || 0)}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+          {/* ================= PRO DASHBOARD QUICK STATS BAR ================= */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-2.5 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center shrink-0">
+                <Gavel className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div className="text-[11px] text-emerald-100/80 mt-1 flex items-center justify-between">
-                <span>{t.dashboard.lockedDeposits}:</span>
-                <span className="font-bold">
-                  {formatUZS(walletBalance?.locked_deposits_tiyin || lockedDeposits)}
+              <div className="min-w-0 flex-1">
+                <span className="text-[9px] sm:text-[11px] text-slate-400 font-semibold block uppercase tracking-wider truncate">Bozordagi Lotlar</span>
+                <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white leading-tight block">{marketAuctions.length} ta</span>
+              </div>
+            </div>
+
+            <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-2.5 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center shrink-0">
+                <Radio className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-[9px] sm:text-[11px] text-slate-400 font-semibold block uppercase tracking-wider truncate">Ishtiroklarim</span>
+                <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white leading-tight block">{participatingAuctions.length} ta</span>
+              </div>
+            </div>
+
+            <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-2.5 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 flex items-center justify-center shrink-0">
+                <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-[9px] sm:text-[11px] text-slate-400 font-semibold block uppercase tracking-wider truncate">Mavjud Balans</span>
+                <span className="text-xs sm:text-base font-black text-emerald-600 truncate block leading-tight">
+                  {formatUZS(walletBalance?.balance_tiyin || 0)}
                 </span>
               </div>
             </div>
 
-            <button
-              onClick={() => setIsWithdrawalModalOpen(true)}
-              className="w-full py-2 px-3 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 active:scale-[0.98] transition-all font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md"
-            >
-              <ArrowUpRight className="w-4 h-4 text-emerald-600" />
-              <span>{t.dashboard.withdraw}</span>
-            </button>
-          </Card>
-        </aside>
+            <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-2.5 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-[9px] sm:text-[11px] text-slate-400 font-semibold block uppercase tracking-wider truncate">Band Depozit</span>
+                <span className="text-xs sm:text-base font-black text-amber-600 truncate block leading-tight">
+                  {formatUZS(lockedDeposits)}
+                </span>
+              </div>
+            </div>
+          </div>
 
-        {/* ================= MAIN CONTENT AREA ================= */}
-        <main className="col-span-1 lg:col-span-9 space-y-6 min-w-0">
           {/* ================= 1. AUCTIONS VIEW (Kirishi bilanoq mahsulotlar chiqadi) ================= */}
           {isAuctionView && (
             <div className="space-y-6">
@@ -1163,18 +900,6 @@ export const DashboardPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Optional Mobile Bo'limlar button */}
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={() => setIsSectionsDrawerOpen(true)}
-                    variant="outline"
-                    size="sm"
-                    className="lg:hidden text-xs font-semibold"
-                  >
-                    <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
-                    <span>{t.dashboard.sidebarTitle || "Bo'limlar"}</span>
-                  </Button>
-                </div>
               </div>
 
               {/* ================= REDESIGNED MARKETPLACE SEARCH & FILTER HERO ================= */}
@@ -1344,7 +1069,7 @@ export const DashboardPage: React.FC = () => {
 
               {/* AUCTION PRODUCTS LISTING / GRID */}
               {isLoadingData ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
                     <Card key={i} className="animate-pulse h-64 border-slate-200 dark:border-slate-800 rounded-2xl p-4">
                       <div className="w-full h-full bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
@@ -1410,7 +1135,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {filteredAuctions.map((auc) => {
                     const rawImage = auc.product?.images?.[0]?.image_url;
                     const mediaUrl = getMediaUrl(rawImage);
@@ -2324,8 +2049,7 @@ export const DashboardPage: React.FC = () => {
               </Card>
             </div>
           )}
-        </main>
-      </div>
+        </div>
 
       {/* ================= OLX-STYLE SELLING MODAL (Mahsulot sotish) ================= */}
       {isModalOpen && (
