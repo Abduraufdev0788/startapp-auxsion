@@ -24,7 +24,7 @@ export const TermsPage: React.FC = () => {
             <span>1. Umumiy qoidalar</span>
           </h2>
           <p>
-            Ushbu Shartnoma «AuctionHub» elektron auksion platformasi (keyingi o'rinlarda — «Platforma») va Platforma xizmatlaridan foydalanuvchi jismoniy yoki yuridik shaxslar (keyingi o'rinlarda — «Foydalanuvchi») o'rtasidagi munosabatlarni tartibga soladi.
+            Ushbu Shartnoma «Lotly» elektron auksion platformasi (keyingi o'rinlarda — «Platforma») va Platforma xizmatlaridan foydalanuvchi jismoniy yoki yuridik shaxslar (keyingi o'rinlarda — «Foydalanuvchi») o'rtasidagi munosabatlarni tartibga soladi.
           </p>
           <p>
             Platformada ro'yxatdan o'tish yoki har qanday harakatni amalga oshirish orqali Foydalanuvchi ushbu shartnoma shartlarini to'liq va so'zsiz qabul qilgan hisoblanadi (aksept).
@@ -91,7 +91,7 @@ export const TermsPage: React.FC = () => {
 
         <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center space-x-3 text-xs text-slate-500">
           <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" />
-          <span>AuctionHub O'zbekiston Respublikasi elektron tijorat to'g'risidagi qonunchiligiga to'liq muvofiq faoliyat yuritadi.</span>
+          <span>Lotly O'zbekiston Respublikasi elektron tijorat to'g'risidagi qonunchiligiga to'liq muvofiq faoliyat yuritadi.</span>
         </div>
       </Card>
     </div>

@@ -63,7 +63,7 @@ export const ContactPage: React.FC = () => {
                 <MessageSquare className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                 <div>
                   <div className="font-semibold text-slate-900 dark:text-slate-100">Telegram qo'llab-quvvatlash</div>
-                  <div className="text-xs text-emerald-600 font-medium mt-0.5">@AuctionHubSupportBot</div>
+                  <div className="text-xs text-emerald-600 font-medium mt-0.5">@LotlySupportBot</div>
                 </div>
               </div>
             </div>

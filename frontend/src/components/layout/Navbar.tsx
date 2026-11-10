@@ -63,14 +63,47 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-            <Gavel className="w-5 h-5" />
-          </div>
-          <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-            AuctionHub
-          </span>
-        </Link>
+        <div className="flex items-center space-x-6">
+          <Link to="/" className="flex items-center space-x-2.5 group">
+            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/25 group-hover:scale-105 group-hover:shadow-emerald-500/40 transition-all duration-300">
+              <Gavel className="w-5 h-5 transform -rotate-12 group-hover:rotate-0 transition-transform" />
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-white dark:border-slate-900"></span>
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 bg-clip-text text-transparent">
+                Lotly
+              </span>
+              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 -mt-1">
+                Auksion Maydoni
+              </span>
+            </div>
+          </Link>
+
+          {/* Nav links on desktop */}
+          <nav className="hidden lg:flex items-center space-x-1 text-sm font-medium text-slate-600 dark:text-slate-300">
+            <Link
+              to="/dashboard"
+              className="px-3 py-1.5 rounded-lg hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+            >
+              {t.nav.auctions}
+            </Link>
+            <Link
+              to="/how-it-works"
+              className="px-3 py-1.5 rounded-lg hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+            >
+              Qanday ishlaydi?
+            </Link>
+            <Link
+              to="/terms"
+              className="px-3 py-1.5 rounded-lg hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+            >
+              Kafolatlar
+            </Link>
+          </nav>
+        </div>
 
         {/* Search (shown only on landing / other pages to avoid duplicates on search/dashboard) */}
         {!hideNavSearch && (
@@ -98,7 +131,15 @@ export const Navbar: React.FC = () => {
         )}
 
         {/* Actions */}
-        <div className="flex items-center space-x-1.5 sm:space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Sell Button CTA */}
+          <Link
+            to={isAuthenticated ? '/dashboard?openModal=true' : '/login'}
+            className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20 hover:from-emerald-500 hover:to-teal-500 hover:shadow-emerald-500/35 transition-all duration-200"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>Sotish</span>
+          </Link>
           {/* Language Switcher */}
           <div className="relative" ref={langMenuRef}>
             <button

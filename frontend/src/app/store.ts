@@ -1,5 +1,5 @@
 /**
- * Simple client state store for AuctionHub (Authentication & Theme).
+ * Simple client state store for Lotly (Authentication & Theme).
  */
 
 export interface AuthState {

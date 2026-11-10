@@ -89,7 +89,7 @@ export const HowItWorksPage: React.FC = () => {
           <span>Shartnomaviy va xavfsiz onlayn savdo</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-          AuctionHub qanday ishlaydi?
+          Lotly qanday ishlaydi?
         </h1>
         <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
           O'zbekistonda adolatli narx, kafolatlangan depozit va ishonchli yetkazib berish tamoyillari asosida ishlovchi birinchi auksion maydoni.

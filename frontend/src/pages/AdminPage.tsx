@@ -97,7 +97,7 @@ export const AdminPage: React.FC = () => {
           <div>
             <h1 className="text-2xl font-bold">Admin boshqaruv paneli</h1>
             <p className="text-slate-400 text-xs mt-0.5">
-              AuctionHub platformasi xavfsizligi, moderatsiya va moliyaviy audit
+              Lotly platformasi xavfsizligi, moderatsiya va moliyaviy audit
             </p>
           </div>
         </div>
