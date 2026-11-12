@@ -37,7 +37,12 @@ export const useAuctionWebSocket = ({
 
     // Build WS URL
     const envWsUrl = import.meta.env.VITE_WS_URL;
-    let wsBase = envWsUrl || 'ws://localhost:8000/api/v1';
+    let wsBase = envWsUrl;
+    if (!wsBase && typeof window !== 'undefined' && window.location) {
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsBase = `${wsProtocol}//${window.location.hostname}:8000/api/v1`;
+    }
+    wsBase = wsBase || 'ws://localhost:8000/api/v1';
     // Remove trailing /ws or / to prevent duplicate /ws/ws/ paths
     wsBase = wsBase.replace(/\/ws\/?$/, '').replace(/\/$/, '');
     const socketUrl = `${wsBase}/ws/auctions/${auctionId}`;
