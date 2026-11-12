@@ -49,3 +49,4 @@ if [[ "$*" == *"uvicorn"* ]]; then
 fi
 
 exec "$@"
+

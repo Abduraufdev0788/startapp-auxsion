@@ -35,3 +35,4 @@ echo "=========================================================="
 echo "ℹ️  Eslatma: Agar brauzerda ochilmasa, AWS Security Group'da"
 echo "   5173 va 8000 portlari (Custom TCP 0.0.0.0/0) ochiqligini tekshiring."
 echo "=========================================================="
+
